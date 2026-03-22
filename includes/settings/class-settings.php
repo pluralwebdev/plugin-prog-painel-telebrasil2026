@@ -38,81 +38,60 @@ class Settings {
 			'sanitize_callback' => array( $this, 'sanitize' ),
 		) );
 
-		add_settings_section(
-			'pt_event_colors',
-			__( 'Cores', 'pt-event' ),
-			null,
-			'pt-event-settings'
-		);
+		// --- Cores principais ---
+		add_settings_section( 'pt_event_colors', __( 'Cores Principais', 'pt-event' ), null, 'pt-event-settings' );
 
 		$color_fields = array(
+			'cor_primaria'           => __( 'Cor Primária (verde)', 'pt-event' ),
+			'cor_primaria_claro'     => __( 'Cor Primária Clara', 'pt-event' ),
+			'cor_primaria_bg'        => __( 'Cor Primária Background', 'pt-event' ),
+			'cor_escura'             => __( 'Cor Escura (títulos)', 'pt-event' ),
+			'cor_dourado'            => __( 'Cor Dourada (destaques)', 'pt-event' ),
+			'cor_texto'              => __( 'Cor do Texto', 'pt-event' ),
+			'cor_fundo'              => __( 'Cor de Fundo', 'pt-event' ),
 			'cor_fundo_sessao'       => __( 'Fundo da Sessão', 'pt-event' ),
-			'cor_cabecalho'          => __( 'Cabeçalho', 'pt-event' ),
-			'cor_texto'              => __( 'Texto', 'pt-event' ),
 			'cor_nome_participante'  => __( 'Nome do Participante', 'pt-event' ),
 			'cor_cargo_participante' => __( 'Cargo do Participante', 'pt-event' ),
+			'cor_especial'           => __( 'Cor Sessão Especial (almoço)', 'pt-event' ),
 		);
 
 		foreach ( $color_fields as $key => $label ) {
 			add_settings_field(
-				$key,
-				$label,
+				$key, $label,
 				array( $this, 'render_color_field' ),
-				'pt-event-settings',
-				'pt_event_colors',
-				array( 'key' => $key, 'label' => $label )
+				'pt-event-settings', 'pt_event_colors',
+				array( 'key' => $key )
 			);
 		}
 
-		add_settings_section(
-			'pt_event_image',
-			__( 'Imagem do Participante', 'pt-event' ),
-			null,
-			'pt-event-settings'
-		);
+		// --- Imagem do Participante ---
+		add_settings_section( 'pt_event_image', __( 'Imagem do Participante', 'pt-event' ), null, 'pt-event-settings' );
 
-		add_settings_field(
-			'border_color',
-			__( 'Cor da Borda', 'pt-event' ),
-			array( $this, 'render_color_field' ),
-			'pt-event-settings',
-			'pt_event_image',
-			array( 'key' => 'border_color' )
-		);
+		add_settings_field( 'border_color', __( 'Cor da Borda', 'pt-event' ),
+			array( $this, 'render_color_field' ), 'pt-event-settings', 'pt_event_image', array( 'key' => 'border_color' ) );
 
-		add_settings_field(
-			'border_width',
-			__( 'Largura da Borda (px)', 'pt-event' ),
-			array( $this, 'render_number_field' ),
-			'pt-event-settings',
-			'pt_event_image',
-			array( 'key' => 'border_width', 'min' => 0, 'max' => 20 )
-		);
+		add_settings_field( 'border_width', __( 'Largura da Borda (px)', 'pt-event' ),
+			array( $this, 'render_number_field' ), 'pt-event-settings', 'pt_event_image',
+			array( 'key' => 'border_width', 'min' => 0, 'max' => 20 ) );
 
-		add_settings_field(
-			'border_radius',
-			__( 'Border Radius (%)', 'pt-event' ),
-			array( $this, 'render_number_field' ),
-			'pt-event-settings',
-			'pt_event_image',
-			array( 'key' => 'border_radius', 'min' => 0, 'max' => 50 )
-		);
+		add_settings_field( 'border_radius', __( 'Border Radius (%)', 'pt-event' ),
+			array( $this, 'render_number_field' ), 'pt-event-settings', 'pt_event_image',
+			array( 'key' => 'border_radius', 'min' => 0, 'max' => 50 ) );
 
-		add_settings_section(
-			'pt_event_custom',
-			__( 'CSS Customizado', 'pt-event' ),
-			null,
-			'pt-event-settings'
-		);
+		// --- Textos da seção ---
+		add_settings_section( 'pt_event_texts', __( 'Textos', 'pt-event' ), null, 'pt-event-settings' );
 
-		add_settings_field(
-			'custom_css',
-			__( 'CSS', 'pt-event' ),
-			array( $this, 'render_textarea_field' ),
-			'pt-event-settings',
-			'pt_event_custom',
-			array( 'key' => 'custom_css' )
-		);
+		add_settings_field( 'titulo_secao_sub', __( 'Subtítulo da seção (ex: "Confira")', 'pt-event' ),
+			array( $this, 'render_text_field' ), 'pt-event-settings', 'pt_event_texts', array( 'key' => 'titulo_secao_sub' ) );
+
+		add_settings_field( 'titulo_secao', __( 'Título da seção (ex: "Principais Temas")', 'pt-event' ),
+			array( $this, 'render_text_field' ), 'pt-event-settings', 'pt_event_texts', array( 'key' => 'titulo_secao' ) );
+
+		// --- CSS Customizado ---
+		add_settings_section( 'pt_event_custom', __( 'CSS Customizado', 'pt-event' ), null, 'pt-event-settings' );
+
+		add_settings_field( 'custom_css', __( 'CSS', 'pt-event' ),
+			array( $this, 'render_textarea_field' ), 'pt-event-settings', 'pt_event_custom', array( 'key' => 'custom_css' ) );
 	}
 
 	public function render_color_field( $args ) {
@@ -129,6 +108,12 @@ class Settings {
 		echo '<input type="number" name="pt_event_settings[' . esc_attr( $args['key'] ) . ']" value="' . esc_attr( $value ) . '" min="' . esc_attr( $min ) . '" max="' . esc_attr( $max ) . '" />';
 	}
 
+	public function render_text_field( $args ) {
+		$settings = \PTEvent\Helpers\Helpers::get_settings();
+		$value    = isset( $settings[ $args['key'] ] ) ? $settings[ $args['key'] ] : '';
+		echo '<input type="text" name="pt_event_settings[' . esc_attr( $args['key'] ) . ']" value="' . esc_attr( $value ) . '" class="regular-text" />';
+	}
+
 	public function render_textarea_field( $args ) {
 		$settings = \PTEvent\Helpers\Helpers::get_settings();
 		$value    = isset( $settings[ $args['key'] ] ) ? $settings[ $args['key'] ] : '';
@@ -138,14 +123,21 @@ class Settings {
 	public function sanitize( $input ) {
 		$sanitized = array();
 
-		$color_keys = array( 'cor_fundo_sessao', 'cor_cabecalho', 'cor_texto', 'cor_nome_participante', 'cor_cargo_participante', 'border_color' );
+		$color_keys = array(
+			'cor_primaria', 'cor_primaria_claro', 'cor_primaria_bg',
+			'cor_escura', 'cor_dourado', 'cor_texto', 'cor_fundo',
+			'cor_fundo_sessao', 'cor_nome_participante', 'cor_cargo_participante',
+			'cor_especial', 'border_color',
+		);
 		foreach ( $color_keys as $key ) {
 			$sanitized[ $key ] = isset( $input[ $key ] ) ? sanitize_hex_color( $input[ $key ] ) : '';
 		}
 
-		$sanitized['border_width']  = isset( $input['border_width'] ) ? absint( $input['border_width'] ) : 2;
-		$sanitized['border_radius'] = isset( $input['border_radius'] ) ? absint( $input['border_radius'] ) : 50;
-		$sanitized['custom_css']    = isset( $input['custom_css'] ) ? wp_strip_all_tags( $input['custom_css'] ) : '';
+		$sanitized['border_width']    = isset( $input['border_width'] ) ? absint( $input['border_width'] ) : 3;
+		$sanitized['border_radius']   = isset( $input['border_radius'] ) ? absint( $input['border_radius'] ) : 50;
+		$sanitized['titulo_secao_sub'] = isset( $input['titulo_secao_sub'] ) ? sanitize_text_field( $input['titulo_secao_sub'] ) : '';
+		$sanitized['titulo_secao']     = isset( $input['titulo_secao'] ) ? sanitize_text_field( $input['titulo_secao'] ) : '';
+		$sanitized['custom_css']       = isset( $input['custom_css'] ) ? wp_strip_all_tags( $input['custom_css'] ) : '';
 
 		return $sanitized;
 	}

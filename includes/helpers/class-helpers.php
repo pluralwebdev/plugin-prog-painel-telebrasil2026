@@ -9,14 +9,22 @@ class Helpers {
 
 	public static function get_settings() {
 		$defaults = array(
+			'cor_primaria'           => '#006B3F',
+			'cor_primaria_claro'     => '#00A86B',
+			'cor_primaria_bg'        => '#e8f5ee',
+			'cor_escura'             => '#0A1E3D',
+			'cor_dourado'            => '#D4A843',
+			'cor_texto'              => '#6B7280',
+			'cor_fundo'              => '#F4F6F9',
 			'cor_fundo_sessao'       => '#ffffff',
-			'cor_cabecalho'          => '#1a1a2e',
-			'cor_texto'              => '#333333',
-			'cor_nome_participante'  => '#1a1a2e',
-			'cor_cargo_participante' => '#666666',
-			'border_color'           => '#cccccc',
-			'border_width'           => '2',
+			'cor_nome_participante'  => '#0A1E3D',
+			'cor_cargo_participante' => '#6B7280',
+			'cor_especial'           => '#059669',
+			'border_color'           => '#006B3F',
+			'border_width'           => '3',
 			'border_radius'          => '50',
+			'titulo_secao_sub'       => 'Confira',
+			'titulo_secao'           => 'Principais Temas',
 			'custom_css'             => '',
 		);
 
@@ -110,6 +118,20 @@ class Helpers {
 		ksort( $agrupadas );
 
 		return $agrupadas;
+	}
+
+	public static function get_initials( $name ) {
+		if ( empty( $name ) ) {
+			return '';
+		}
+		$parts = explode( ' ', trim( $name ) );
+		$initials = '';
+		if ( count( $parts ) >= 2 ) {
+			$initials = mb_strtoupper( mb_substr( $parts[0], 0, 1 ) ) . mb_strtoupper( mb_substr( end( $parts ), 0, 1 ) );
+		} else {
+			$initials = mb_strtoupper( mb_substr( $parts[0], 0, 2 ) );
+		}
+		return $initials;
 	}
 
 	public static function format_dia_label( $dia ) {

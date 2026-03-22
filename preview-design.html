@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programação — Painel Telebrasil 2026</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --verde: #006B3F;
+      --verde-escuro: #005530;
+      --verde-claro: #00A86B;
+      --verde-bg: #e8f5ee;
+      --azul: #0A1E3D;
+      --dourado: #D4A843;
+      --branco: #FFFFFF;
+      --cinza-bg: #F4F6F9;
+      --cinza-texto: #6B7280;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cinza-bg);
+      color: #1a1a2e;
+    }
+
+    /* ===== DAY SELECTOR (title left + badges right) ===== */
+    .day-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 40px 40px 0;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .day-selector-title .sub {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--verde);
+      margin-bottom: 4px;
+    }
+
+    .day-selector-title h2 {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--azul);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .day-badges {
+      display: flex;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .day-badge {
+      width: 130px;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 3px solid transparent;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      background: #fff;
+      text-align: center;
+      position: relative;
+    }
+
+    .day-badge:hover {
+      box-shadow: 0 4px 20px rgba(0, 107, 63, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .day-badge.active {
+      border-color: var(--verde);
+      box-shadow: 0 4px 24px rgba(0, 107, 63, 0.25);
+    }
+
+    .day-badge-top {
+      background: var(--verde);
+      color: #fff;
+      padding: 6px 0 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: background 0.3s;
+    }
+
+    .day-badge:not(.active) .day-badge-top {
+      background: #94a3b8;
+    }
+
+    .day-badge-body {
+      padding: 10px 0 14px;
+    }
+
+    .day-badge-mes {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--verde);
+      text-transform: uppercase;
+    }
+
+    .day-badge:not(.active) .day-badge-mes {
+      color: #94a3b8;
+    }
+
+    .day-badge-num {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--azul);
+      line-height: 1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .day-badge:not(.active) .day-badge-num {
+      color: #9ca3af;
+    }
+
+    .day-badge-ano {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dourado);
+      margin-top: 2px;
+    }
+
+    .day-badge:not(.active) .day-badge-ano {
+      color: #c4c4c4;
+    }
+
+    .day-badge-weekday {
+      font-size: 11px;
+      color: var(--cinza-texto);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* ===== TIME NAV (sticky) ===== */
+    .time-nav-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(244, 246, 249, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      margin-top: 24px;
+      transition: box-shadow 0.2s;
+    }
+
+    .time-nav-wrapper.scrolled {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .time-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .time-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .time-nav-day-label {
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--verde);
+      padding: 6px 14px;
+      background: var(--verde-bg);
+      border-radius: 50px;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .time-pill {
+      flex-shrink: 0;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 700;
+      border: 2px solid #d1d5db;
+      background: #fff;
+      color: var(--cinza-texto);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      white-space: nowrap;
+    }
+
+    .time-pill:hover {
+      border-color: var(--verde);
+      color: var(--verde);
+    }
+
+    .time-pill.active {
+      background: var(--verde);
+      border-color: var(--verde);
+      color: #fff;
+    }
+
+    .time-pill-especial {
+      border-color: #d1fae5;
+      color: #059669;
+    }
+
+    .time-pill-especial:hover {
+      border-color: #059669;
+    }
+
+    /* ===== CONTAINER ===== */
+    .prog-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+
+    .day-content {
+      display: none;
+    }
+
+    .day-content.active {
+      display: block;
+    }
+
+    /* ===== SESSAO CARD ===== */
+    .sessao-card {
+      display: flex;
+      margin-bottom: 28px;
+      position: relative;
+      scroll-margin-top: 80px;
+    }
+
+    .sessao-timeline {
+      width: 120px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .sessao-timeline::after {
+      content: '';
+      position: absolute;
+      top: 90px;
+      bottom: -28px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--verde), rgba(0, 107, 63, 0.08));
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .sessao-card:last-child .sessao-timeline::after {
+      display: none;
+    }
+
+    .timeline-horario {
+      background: var(--verde);
+      color: #fff;
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      min-width: 104px;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 4px 16px rgba(0, 107, 63, 0.25);
+    }
+
+    .timeline-hora-inicio {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .timeline-hora-fim {
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.7;
+      margin-top: 3px;
+    }
+
+    .sessao-content {
+      flex: 1;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.04);
+      border-left: 4px solid var(--verde);
+      margin-left: 16px;
+    }
+
+    .sessao-content-inner {
+      padding: 28px 28px 20px;
+    }
+
+    .sessao-tipo {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--verde-claro);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .sessao-titulo {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--azul);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .sessao-desc {
+      font-size: 15px;
+      color: var(--cinza-texto);
+      margin-top: 12px;
+      line-height: 1.65;
+    }
+
+    /* PARTICIPANTES */
+    .participantes-area {
+      padding: 0 28px 24px;
+    }
+
+    .papel-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--verde);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--verde-bg);
+      display: inline-block;
+    }
+
+    .papel-section {
+      margin-bottom: 20px;
+    }
+
+    .papel-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .participantes-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      justify-content: flex-start;
+    }
+
+    .participante-item {
+      text-align: center;
+      width: 120px;
+    }
+
+    .foto-circle {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 12px;
+      border: 3px solid var(--verde);
+      box-shadow: 0 4px 16px rgba(0, 107, 63, 0.15);
+    }
+
+    .foto-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .foto-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 26px;
+      color: #fff;
+      background: var(--verde);
+    }
+
+    .part-nome {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--azul);
+      line-height: 1.3;
+    }
+
+    .part-cargo {
+      font-size: 12px;
+      color: var(--cinza-texto);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    /* SESSAO ESPECIAL */
+    .sessao-especial .sessao-content {
+      border-left-color: #059669;
+      background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    }
+
+    .sessao-especial .timeline-horario {
+      background: #059669;
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.25);
+    }
+
+    .sessao-especial .sessao-titulo {
+      font-size: 18px;
+      color: #065f46;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .day-selector {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 24px 16px 0;
+        gap: 16px;
+      }
+
+      .day-selector-title h2 {
+        font-size: 26px;
+      }
+
+      .day-selector-title .sub {
+        font-size: 14px;
+      }
+
+      .day-badges {
+        gap: 12px;
+      }
+
+      .day-badge {
+        width: 110px;
+        border-radius: 14px;
+      }
+
+      .day-badge-num {
+        font-size: 36px;
+      }
+
+      .day-badge-top {
+        font-size: 10px;
+      }
+
+      .time-nav {
+        justify-content: flex-start;
+        padding: 10px 12px;
+        gap: 6px;
+      }
+
+      .time-nav-day-label {
+        font-size: 12px;
+        padding: 5px 10px;
+      }
+
+      .time-pill {
+        padding: 6px 14px;
+        font-size: 13px;
+      }
+
+      .prog-container {
+        padding: 20px 12px 60px;
+      }
+
+      .sessao-card {
+        flex-direction: column;
+        margin-bottom: 24px;
+        scroll-margin-top: 60px;
+      }
+
+      .sessao-timeline {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 0;
+      }
+
+      .sessao-timeline::after {
+        display: none;
+      }
+
+      .timeline-horario {
+        border-radius: 12px;
+        padding: 10px 20px;
+        min-width: auto;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .timeline-hora-inicio {
+        font-size: 24px;
+      }
+
+      .timeline-hora-fim {
+        font-size: 12px;
+        margin-top: 0;
+      }
+
+      .sessao-content {
+        margin-left: 0;
+        margin-top: 10px;
+        border-left: none;
+        border-top: 4px solid var(--verde);
+      }
+
+      .sessao-content-inner {
+        padding: 20px 18px 16px;
+      }
+
+      .sessao-titulo {
+        font-size: 20px;
+      }
+
+      .sessao-desc {
+        font-size: 14px;
+      }
+
+      .participantes-area {
+        padding: 0 18px 20px;
+      }
+
+      .participantes-row {
+        gap: 16px;
+        justify-content: center;
+      }
+
+      .participante-item {
+        width: 100px;
+      }
+
+      .foto-circle {
+        width: 80px;
+        height: 80px;
+      }
+
+      .foto-placeholder {
+        font-size: 22px;
+      }
+
+      .part-nome {
+        font-size: 13px;
+      }
+
+      .part-cargo {
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .day-badges {
+        gap: 10px;
+      }
+
+      .day-badge {
+        width: 100px;
+      }
+
+      .day-badge-num {
+        font-size: 32px;
+      }
+
+      .day-badge-mes {
+        font-size: 12px;
+      }
+
+      .day-selector-title h2 {
+        font-size: 22px;
+      }
+
+      .time-pill {
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+
+      .sessao-titulo {
+        font-size: 18px;
+      }
+
+      .timeline-hora-inicio {
+        font-size: 22px;
+      }
+
+      .participante-item {
+        width: 85px;
+      }
+
+      .foto-circle {
+        width: 68px;
+        height: 68px;
+      }
+
+      .foto-placeholder {
+        font-size: 18px;
+      }
+    }
+
+    /* ===== BOTTOM DAY SELECTOR ===== */
+    .day-selector-bottom {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding: 20px 20px 48px;
+    }
+
+    @media (max-width: 420px) {
+      .day-selector-bottom {
+        gap: 10px;
+      }
+
+      .day-selector-bottom .day-badge {
+        width: 100px;
+      }
+
+      .day-selector-bottom .day-badge-num {
+        font-size: 32px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .day-selector-bottom .day-badge {
+        width: 110px;
+      }
+
+      .day-selector-bottom .day-badge-num {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- DAY SELECTOR -->
+  <div class="day-selector">
+    <div class="day-selector-title">
+      <div class="sub">Confira</div>
+      <h2>Principais Temas</h2>
+    </div>
+    <div class="day-badges">
+      <div class="day-badge active" data-day="dia1" data-label="19/mai — Segunda" onclick="switchDay('dia1', this)">
+        <div class="day-badge-top">1º Dia</div>
+        <div class="day-badge-body">
+          <div class="day-badge-mes">MAI</div>
+          <div class="day-badge-num">19</div>
+          <div class="day-badge-ano">2026</div>
+          <div class="day-badge-weekday">Segunda-feira</div>
+        </div>
+      </div>
+      <div class="day-badge" data-day="dia2" data-label="20/mai — Terça" onclick="switchDay('dia2', this)">
+        <div class="day-badge-top">2º Dia</div>
+        <div class="day-badge-body">
+          <div class="day-badge-mes">MAI</div>
+          <div class="day-badge-num">20</div>
+          <div class="day-badge-ano">2026</div>
+          <div class="day-badge-weekday">Terça-feira</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIME NAV -->
+  <div class="time-nav-wrapper" id="timeNavWrapper">
+    <div class="time-nav" id="timeNav">
+      <!-- Preenchido via JS -->
+    </div>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div class="prog-container">
+
+    <!-- ===================== DIA 1 ===================== -->
+    <div id="dia1" class="day-content active">
+
+      <div class="sessao-card" data-hora="09:00">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">09:00</div>
+            <div class="timeline-hora-fim">até 10:00</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Painel inaugural</div>
+            <div class="sessao-titulo">O Papel das Instituições na Era Digital</div>
+            <div class="sessao-desc">As empresas de conectividade são protagonistas de um processo de mudança na
+              sociedade que começou com os serviços digitais. Como estamos nos preparando para estas mudanças?</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Moderador</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">DG</div>
+                  </div>
+                  <div class="part-nome">Diego Aguiar</div>
+                  <div class="part-cargo">Head do Brasil da Qualcomm</div>
+                </div>
+              </div>
+            </div>
+            <div class="papel-section">
+              <div class="papel-label">Debatedores</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">EG</div>
+                  </div>
+                  <div class="part-nome">Eduardo Gomes</div>
+                  <div class="part-cargo">Vice-Presidente do Senado Federal</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">AR</div>
+                  </div>
+                  <div class="part-nome">Aguinaldo Ribeiro</div>
+                  <div class="part-cargo">Deputado Federal</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">FS</div>
+                  </div>
+                  <div class="part-nome">Frederico de Siqueira Filho</div>
+                  <div class="part-cargo">Ministro das Comunicações</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">ED</div>
+                  </div>
+                  <div class="part-nome">Esther Dweck</div>
+                  <div class="part-cargo">Ministra da Gestão e Inovação</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">CB</div>
+                  </div>
+                  <div class="part-nome">Carlos Baigorri</div>
+                  <div class="part-cargo">Presidente da Anatel</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">AG</div>
+                  </div>
+                  <div class="part-nome">Alberto Griselli</div>
+                  <div class="part-cargo">CEO da TIM Brasil</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">CG</div>
+                  </div>
+                  <div class="part-nome">Christian Gebara</div>
+                  <div class="part-cargo">CEO da Vivo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card" data-hora="10:30">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">10:30</div>
+            <div class="timeline-hora-fim">até 12:00</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Keynote</div>
+            <div class="sessao-titulo">Telecomunicações e a Nova Economia: Caminhos para o Crescimento Sustentável</div>
+            <div class="sessao-desc">Uma visão estratégica sobre como o setor de telecomunicações pode impulsionar a
+              economia brasileira através de investimentos em infraestrutura digital e parcerias público-privadas.</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Palestrante</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">MF</div>
+                  </div>
+                  <div class="part-nome">Marcos Ferrari</div>
+                  <div class="part-cargo">Presidente Executivo da Conexis Brasil Digital</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card" data-hora="12:20">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">12:20</div>
+            <div class="timeline-hora-fim">até 13:00</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Plenária 1</div>
+            <div class="sessao-titulo">Inteligência Artificial + Conectividade: O Cenário de Oportunidades</div>
+            <div class="sessao-desc">As empresas de conectividade são protagonistas de um processo de mudança na
+              sociedade que começou com os serviços digitais e que ganhará uma nova dimensão com a Inteligência
+              Artificial generativa.</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Moderador</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">DA</div>
+                  </div>
+                  <div class="part-nome">Diego Aguiar</div>
+                  <div class="part-cargo">Head do Brasil da Qualcomm</div>
+                </div>
+              </div>
+            </div>
+            <div class="papel-section">
+              <div class="papel-label">Debatedores</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">DI</div>
+                  </div>
+                  <div class="part-nome">Denise Inaba</div>
+                  <div class="part-cargo">CIO da Vivo</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">RD</div>
+                  </div>
+                  <div class="part-nome">Rodrigo Duclos</div>
+                  <div class="part-cargo">CDO da Claro</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">HM</div>
+                  </div>
+                  <div class="part-nome">Henrique Miguel</div>
+                  <div class="part-cargo">Sec. Transformação Digital MCTI</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card sessao-especial" data-hora="13:00" data-especial="1">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">13:00</div>
+            <div class="timeline-hora-fim">até 14:00</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-titulo">Almoço</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card" data-hora="14:00">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">14:00</div>
+            <div class="timeline-hora-fim">até 15:30</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Plenária 2</div>
+            <div class="sessao-titulo">5G e Além: O Futuro da Infraestrutura Digital no Brasil</div>
+            <div class="sessao-desc">Os avanços na implementação do 5G, os desafios regulatórios e as perspectivas para
+              a próxima geração de conectividade. Qual é o roadmap para a universalização?</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Moderador</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">VC</div>
+                  </div>
+                  <div class="part-nome">Vinícius Caram</div>
+                  <div class="part-cargo">Superintendente da Anatel</div>
+                </div>
+              </div>
+            </div>
+            <div class="papel-section">
+              <div class="papel-label">Debatedores</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">RD</div>
+                  </div>
+                  <div class="part-nome">Rodrigo Dienstmann</div>
+                  <div class="part-cargo">Presidente da Ericsson Brasil</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">FC</div>
+                  </div>
+                  <div class="part-nome">Felipe Campos</div>
+                  <div class="part-cargo">Diretor de Tecnologia, Nokia</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">LT</div>
+                  </div>
+                  <div class="part-nome">Luiz Tonisi</div>
+                  <div class="part-cargo">CEO da Huawei Brasil</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card" data-hora="16:00">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">16:00</div>
+            <div class="timeline-hora-fim">até 17:30</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Sessão Temática</div>
+            <div class="sessao-titulo">Tributação e Competitividade no Setor de Telecomunicações</div>
+            <div class="sessao-desc">A reforma tributária e seus impactos no setor de telecomunicações. Oportunidades e
+              desafios para um ambiente mais competitivo e favorável ao investimento.</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Moderador</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">ME</div>
+                  </div>
+                  <div class="part-nome">Marcio Estefan</div>
+                  <div class="part-cargo">Diretor Regulatório Conexis</div>
+                </div>
+              </div>
+            </div>
+            <div class="papel-section">
+              <div class="papel-label">Debatedores</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">RB</div>
+                  </div>
+                  <div class="part-nome">Robinson Barreirinhas</div>
+                  <div class="part-cargo">Secretário da Receita Federal</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">HT</div>
+                  </div>
+                  <div class="part-nome">Heleno Torres</div>
+                  <div class="part-cargo">Professor de Direito Tributário, USP</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================== DIA 2 ===================== -->
+    <div id="dia2" class="day-content">
+
+      <div class="sessao-card" data-hora="09:00">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">09:00</div>
+            <div class="timeline-hora-fim">até 10:30</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Plenária 3</div>
+            <div class="sessao-titulo">Regulação para a Inovação: O Novo Marco das Telecomunicações</div>
+            <div class="sessao-desc">Como equilibrar segurança jurídica, incentivo ao investimento e proteção do
+              consumidor em um cenário de convergência tecnológica e transformação digital acelerada.</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Moderador</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">MM</div>
+                  </div>
+                  <div class="part-nome">Maximiliano Martinhão</div>
+                  <div class="part-cargo">Diretor da Anatel</div>
+                </div>
+              </div>
+            </div>
+            <div class="papel-section">
+              <div class="papel-label">Debatedores</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">MG</div>
+                  </div>
+                  <div class="part-nome">Mário Girasole</div>
+                  <div class="part-cargo">VP Regulatório da TIM</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">RH</div>
+                  </div>
+                  <div class="part-nome">Ricardo Hobbs</div>
+                  <div class="part-cargo">VP Jurídico da Claro</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">AB</div>
+                  </div>
+                  <div class="part-nome">Ana Claudia Beppu</div>
+                  <div class="part-cargo">Conselheira do CADE</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card" data-hora="11:00">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">11:00</div>
+            <div class="timeline-hora-fim">até 12:30</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Sessão Temática</div>
+            <div class="sessao-titulo">Cibersegurança e Proteção de Dados na Era da Hiperconectividade</div>
+            <div class="sessao-desc">Com a expansão do IoT e da IA, os desafios de segurança cibernética crescem
+              exponencialmente. Quais estratégias o setor de telecomunicações deve adotar?</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Moderadora</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">DC</div>
+                  </div>
+                  <div class="part-nome">Danielle Crema</div>
+                  <div class="part-cargo">Diretora de Cibersegurança</div>
+                </div>
+              </div>
+            </div>
+            <div class="papel-section">
+              <div class="papel-label">Debatedores</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">BC</div>
+                  </div>
+                  <div class="part-nome">Bruno Cavalcanti</div>
+                  <div class="part-cargo">CISO da Vivo</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">FS</div>
+                  </div>
+                  <div class="part-nome">Fernando Soares</div>
+                  <div class="part-cargo">Diretor de Segurança, Anatel</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card sessao-especial" data-hora="12:30" data-especial="1">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">12:30</div>
+            <div class="timeline-hora-fim">até 14:00</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-titulo">Almoço</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sessao-card" data-hora="14:00">
+        <div class="sessao-timeline">
+          <div class="timeline-horario">
+            <div class="timeline-hora-inicio">14:00</div>
+            <div class="timeline-hora-fim">até 15:30</div>
+          </div>
+        </div>
+        <div class="sessao-content">
+          <div class="sessao-content-inner">
+            <div class="sessao-tipo">Painel de Encerramento</div>
+            <div class="sessao-titulo">Conectividade como Motor de Desenvolvimento Social e Inclusão Digital</div>
+            <div class="sessao-desc">Os programas de universalização, parcerias com o terceiro setor e novas iniciativas
+              para levar conectividade de qualidade a todas as regiões do Brasil.</div>
+          </div>
+          <div class="participantes-area">
+            <div class="papel-section">
+              <div class="papel-label">Abertura</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">MF</div>
+                  </div>
+                  <div class="part-nome">Marcos Ferrari</div>
+                  <div class="part-cargo">Presidente Executivo da Conexis</div>
+                </div>
+              </div>
+            </div>
+            <div class="papel-section">
+              <div class="papel-label">Debatedores</div>
+              <div class="participantes-row">
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">JP</div>
+                  </div>
+                  <div class="part-nome">Jordan Paiva</div>
+                  <div class="part-cargo">Secretário de Telecomunicações</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">SR</div>
+                  </div>
+                  <div class="part-nome">Suzana Rodrigues</div>
+                  <div class="part-cargo">Diretora de Inclusão Digital</div>
+                </div>
+                <div class="participante-item">
+                  <div class="foto-circle">
+                    <div class="foto-placeholder">GB</div>
+                  </div>
+                  <div class="part-nome">Gustavo Borges</div>
+                  <div class="part-cargo">Presidente do SindiTelebrasil</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM DAY SELECTOR -->
+  <div class="day-selector-bottom">
+    <div class="day-badge active" data-day="dia1" data-label="19/mai — Segunda" onclick="switchDay('dia1', this)">
+      <div class="day-badge-top">1º Dia</div>
+      <div class="day-badge-body">
+        <div class="day-badge-mes">MAI</div>
+        <div class="day-badge-num">19</div>
+        <div class="day-badge-ano">2026</div>
+        <div class="day-badge-weekday">Segunda-feira</div>
+      </div>
+    </div>
+    <div class="day-badge" data-day="dia2" data-label="20/mai — Terça" onclick="switchDay('dia2', this)">
+      <div class="day-badge-top">2º Dia</div>
+      <div class="day-badge-body">
+        <div class="day-badge-mes">MAI</div>
+        <div class="day-badge-num">20</div>
+        <div class="day-badge-ano">2026</div>
+        <div class="day-badge-weekday">Terça-feira</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var currentDay = 'dia1';
+
+      // Build time nav for active day
+      function buildTimeNav(dayId) {
+        var nav = document.getElementById('timeNav');
+        var activeBadge = document.querySelector('.day-badge[data-day="' + dayId + '"]');
+        var dayLabel = activeBadge ? activeBadge.getAttribute('data-label') : '';
+        var cards = document.querySelectorAll('#' + dayId + ' .sessao-card');
+        var html = '<span class="time-nav-day-label">' + dayLabel + '</span>';
+        cards.forEach(function (card) {
+          var hora = card.getAttribute('data-hora');
+          var especial = card.getAttribute('data-especial');
+          var cls = 'time-pill' + (especial ? ' time-pill-especial' : '');
+          html += '<button class="' + cls + '" data-target="' + dayId + '-' + hora + '" onclick="scrollToSession(this, \'' + dayId + '\', \'' + hora + '\')">' + hora + '</button>';
+        });
+        nav.innerHTML = html;
+      }
+
+      // Switch day
+      window.switchDay = function (dayId, badge) {
+        document.querySelectorAll('.day-content').forEach(function (el) { el.classList.remove('active'); });
+        document.querySelectorAll('.day-badge').forEach(function (el) { el.classList.remove('active'); });
+        document.getElementById(dayId).classList.add('active');
+        document.querySelectorAll('.day-badge[data-day="' + dayId + '"]').forEach(function (b) { b.classList.add('active'); });
+        currentDay = dayId;
+        buildTimeNav(dayId);
+        // Reset active pill
+        document.querySelectorAll('.time-pill').forEach(function (p) { p.classList.remove('active'); });
+      };
+
+      // Scroll to session
+      window.scrollToSession = function (btn, dayId, hora) {
+        document.querySelectorAll('.time-pill').forEach(function (p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        var cards = document.querySelectorAll('#' + dayId + ' .sessao-card');
+        cards.forEach(function (card) {
+          if (card.getAttribute('data-hora') === hora) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      };
+
+      // Highlight active pill on scroll
+      function updateActivePill() {
+        var cards = document.querySelectorAll('#' + currentDay + ' .sessao-card');
+        var pills = document.querySelectorAll('.time-pill');
+        var found = -1;
+        cards.forEach(function (card, i) {
+          var rect = card.getBoundingClientRect();
+          if (rect.top <= 120) { found = i; }
+        });
+        pills.forEach(function (p, i) {
+          p.classList.toggle('active', i === found);
+          // Auto-scroll pill into view
+          if (i === found) {
+            p.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        });
+      }
+
+      // Shadow on scroll
+      var wrapper = document.getElementById('timeNavWrapper');
+      window.addEventListener('scroll', function () {
+        wrapper.classList.toggle('scrolled', window.scrollY > 100);
+        updateActivePill();
+      });
+
+      // Init
+      buildTimeNav('dia1');
+    })();
+  </script>
+</body>
+
+</html>

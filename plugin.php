@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.0.0' );
+define( 'PT_EVENT_VERSION', '1.1.0-' . time() );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -114,11 +114,19 @@ final class Plugin {
 		$settings = get_option( 'pt_event_settings', array() );
 		$custom_css = isset( $settings['custom_css'] ) ? $settings['custom_css'] : '';
 
-		wp_register_style(
+		wp_enqueue_style(
 			'pt-event-frontend',
 			PT_EVENT_PLUGIN_URL . 'assets/css/frontend.css',
 			array(),
 			PT_EVENT_VERSION
+		);
+
+		wp_enqueue_script(
+			'pt-event-frontend',
+			PT_EVENT_PLUGIN_URL . 'assets/js/frontend.js',
+			array(),
+			PT_EVENT_VERSION,
+			true
 		);
 
 		if ( $custom_css ) {
