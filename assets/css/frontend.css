@@ -1,0 +1,199 @@
+/* ==========================================================================
+   Programação de Eventos - Frontend
+   ========================================================================== */
+
+.pt-programacao {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 20px 0;
+	font-family: inherit;
+}
+
+/* Dia */
+.pt-dia {
+	margin-bottom: 40px;
+}
+
+.pt-dia-titulo {
+	font-size: 1.6em;
+	font-weight: 700;
+	color: var(--pt-cor-cabecalho, #1a1a2e);
+	border-bottom: 3px solid var(--pt-cor-cabecalho, #1a1a2e);
+	padding-bottom: 10px;
+	margin-bottom: 24px;
+	text-transform: capitalize;
+}
+
+/* Bloco Horário */
+.pt-bloco-horario {
+	margin-bottom: 30px;
+}
+
+.pt-horario {
+	display: inline-block;
+	background: var(--pt-cor-cabecalho, #1a1a2e);
+	color: #fff;
+	padding: 6px 16px;
+	border-radius: 4px;
+	font-size: 0.95em;
+	font-weight: 600;
+	margin-bottom: 16px;
+}
+
+/* Sessões */
+.pt-sessoes {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 20px;
+}
+
+.pt-sessoes-simultaneas {
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.pt-sessao {
+	background: var(--pt-bg-sessao, #ffffff);
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+	transition: box-shadow 0.2s ease;
+}
+
+.pt-sessao:hover {
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.pt-titulo {
+	font-size: 1.25em;
+	font-weight: 700;
+	color: var(--pt-cor-cabecalho, #1a1a2e);
+	margin: 0 0 6px 0;
+}
+
+.pt-subtitulo {
+	font-size: 1em;
+	font-weight: 400;
+	color: var(--pt-cor-texto, #333333);
+	margin: 0 0 12px 0;
+	opacity: 0.85;
+}
+
+.pt-descricao {
+	font-size: 0.9em;
+	color: var(--pt-cor-texto, #333333);
+	line-height: 1.6;
+	margin-bottom: 16px;
+}
+
+.pt-trilha {
+	display: inline-block;
+	background: var(--pt-cor-cabecalho, #1a1a2e);
+	color: #fff;
+	font-size: 0.75em;
+	padding: 3px 10px;
+	border-radius: 12px;
+	margin-bottom: 16px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+/* Participantes */
+.pt-participantes {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.pt-participante {
+	text-align: center;
+}
+
+.pt-foto {
+	width: 100px;
+	height: 100px;
+	margin: 0 auto 10px;
+	overflow: hidden;
+	border-radius: var(--pt-border-radius, 50%);
+	border: var(--pt-border-width, 2px) solid var(--pt-border-color, #cccccc);
+}
+
+.pt-foto img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.pt-nome {
+	font-size: 0.9em;
+	font-weight: 700;
+	color: var(--pt-cor-nome, #1a1a2e);
+	margin-bottom: 4px;
+}
+
+.pt-cargo {
+	font-size: 0.8em;
+	color: var(--pt-cor-cargo, #666666);
+	line-height: 1.4;
+}
+
+.pt-papel {
+	font-size: 0.75em;
+	color: var(--pt-cor-cabecalho, #1a1a2e);
+	font-style: italic;
+	margin-top: 4px;
+}
+
+.pt-programacao-vazia {
+	text-align: center;
+	color: #999;
+	padding: 40px 20px;
+	font-size: 1.1em;
+}
+
+/* ==========================================================================
+   Responsividade
+   ========================================================================== */
+
+/* Tablet */
+@media (max-width: 992px) {
+	.pt-participantes {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@media (max-width: 768px) {
+	.pt-participantes {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.pt-sessoes-simultaneas {
+		grid-template-columns: 1fr;
+	}
+
+	.pt-sessao {
+		padding: 18px;
+	}
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+	.pt-participantes {
+		grid-template-columns: 1fr;
+	}
+
+	.pt-dia-titulo {
+		font-size: 1.3em;
+	}
+
+	.pt-titulo {
+		font-size: 1.1em;
+	}
+
+	.pt-foto {
+		width: 80px;
+		height: 80px;
+	}
+}

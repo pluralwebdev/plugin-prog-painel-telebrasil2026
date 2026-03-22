@@ -1,0 +1,19 @@
+# Deploy config (contém credenciais FTP)
+doisr_deploy.jsonc
+
+# IDE / Editor
+.windsurf/
+.vscode/
+*.code-workspace
+
+# Docs internos
+estrutura_html.md
+prd-plugin-programacao-evento.json
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Dependências
+node_modules/
+vendor/

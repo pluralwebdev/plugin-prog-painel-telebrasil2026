@@ -1,0 +1,140 @@
+/* ==========================================================================
+   Programação de Eventos - Admin
+   ========================================================================== */
+
+.pt-event-meta-table {
+	width: 100%;
+}
+
+.pt-event-meta-table th {
+	width: 150px;
+	vertical-align: top;
+	padding-top: 14px;
+}
+
+.pt-event-meta-table input[type="time"],
+.pt-event-meta-table input[type="date"],
+.pt-event-meta-table input[type="number"] {
+	width: 200px;
+}
+
+/* Foto */
+.pt-event-foto-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.pt-event-foto-preview {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	overflow: hidden;
+	border: 2px solid #ddd;
+	background: #f0f0f0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.pt-event-foto-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Participantes Box */
+.pt-event-participantes-box {
+	padding: 10px 0;
+}
+
+.pt-event-search-bar {
+	position: relative;
+	margin-bottom: 16px;
+}
+
+.pt-event-search-bar input {
+	width: 100%;
+	padding: 8px 12px;
+	font-size: 14px;
+}
+
+.pt-event-search-results {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-top: none;
+	max-height: 250px;
+	overflow-y: auto;
+	z-index: 100;
+	display: none;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pt-event-search-results.active {
+	display: block;
+}
+
+.pt-event-search-result-item {
+	padding: 10px 12px;
+	cursor: pointer;
+	border-bottom: 1px solid #f0f0f0;
+	transition: background 0.15s;
+}
+
+.pt-event-search-result-item:hover {
+	background: #f7f7f7;
+}
+
+.pt-event-search-result-item .nome {
+	font-weight: 600;
+}
+
+.pt-event-search-result-item .cargo {
+	font-size: 12px;
+	color: #888;
+}
+
+/* Table */
+.pt-event-participantes-table {
+	margin-top: 8px;
+}
+
+.pt-event-col-order {
+	width: 60px;
+	text-align: center;
+}
+
+.pt-event-col-actions {
+	width: 60px;
+	text-align: center;
+}
+
+.pt-event-sortable-handle {
+	cursor: grab;
+	color: #aaa;
+}
+
+.pt-event-sortable-handle:active {
+	cursor: grabbing;
+}
+
+.pt-event-remove-participante {
+	color: #a00 !important;
+	border-color: #a00 !important;
+	font-weight: bold;
+}
+
+.pt-event-participantes-table tbody tr.ui-sortable-helper {
+	background: #fff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pt-event-participantes-table tbody tr.ui-sortable-placeholder {
+	visibility: visible !important;
+	background: #f0f6fc;
+	border: 2px dashed #2271b1;
+}
