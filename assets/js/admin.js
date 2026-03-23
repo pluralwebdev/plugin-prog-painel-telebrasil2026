@@ -9,6 +9,7 @@
 			this.initRemove();
 			this.initMediaUpload();
 			this.initBgImageUpload();
+			this.initPatrocinadorLogoUpload();
 		},
 
 		// =====================================================================
@@ -231,6 +232,50 @@
 				$('#' + targetId).val('');
 				$(this).closest('.pt-event-image-upload-wrapper')
 					.find('.pt-event-image-preview').html('');
+				$(this).hide();
+			});
+		},
+
+		// =====================================================================
+		// Media Upload (logo do patrocinador)
+		// =====================================================================
+		initPatrocinadorLogoUpload: function () {
+			var frame;
+
+			$(document).on('click', '.pt-event-upload-patrocinador-logo', function (e) {
+				e.preventDefault();
+				var $btn = $(this);
+
+				if (frame) {
+					frame.open();
+					return;
+				}
+
+				frame = wp.media({
+					title: 'Selecionar Logo',
+					button: { text: 'Usar esta imagem' },
+					multiple: false,
+					library: { type: 'image' }
+				});
+
+				frame.on('select', function () {
+					var attachment = frame.state().get('selection').first().toJSON();
+					var url = attachment.sizes && attachment.sizes.medium
+						? attachment.sizes.medium.url
+						: attachment.url;
+
+					$btn.closest('.pt-event-foto-wrapper').find('input[type="hidden"]').val(attachment.id);
+					$btn.closest('.pt-event-foto-wrapper').find('.pt-event-foto-preview').html('<img src="' + url + '" style="max-width:100%;height:auto;" />');
+					$btn.siblings('.pt-event-remove-patrocinador-logo').show();
+				});
+
+				frame.open();
+			});
+
+			$(document).on('click', '.pt-event-remove-patrocinador-logo', function (e) {
+				e.preventDefault();
+				$(this).closest('.pt-event-foto-wrapper').find('input[type="hidden"]').val('');
+				$(this).closest('.pt-event-foto-wrapper').find('.pt-event-foto-preview').html('');
 				$(this).hide();
 			});
 		},

@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.1.0
+ * Version:     1.3.0
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.1.0-' . time() );
+define( 'PT_EVENT_VERSION', '1.3.0-' . time() );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -33,6 +33,10 @@ require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-cards.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-home.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-debatedores.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-patrocinadores.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/post-types/class-patrocinador.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-meta-boxes-patrocinador.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-taxonomy-cota.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-importador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-admin-filters.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-seeder.php';
@@ -64,6 +68,11 @@ final class Plugin {
 
 	public function activate() {
 		Database\Relationship::create_table();
+
+		// Register CPTs before seeding terms
+		PostTypes\Patrocinador::get_instance();
+		PostTypes\Patrocinador::seed_default_cotas();
+
 		flush_rewrite_rules();
 	}
 
@@ -84,6 +93,10 @@ final class Plugin {
 		Frontend\Shortcode::get_instance();
 		Frontend\Shortcode_Home::get_instance();
 		Frontend\Shortcode_Debatedores::get_instance();
+		Frontend\Shortcode_Patrocinadores::get_instance();
+		PostTypes\Patrocinador::get_instance();
+		Admin\Meta_Boxes_Patrocinador::get_instance();
+		Admin\Taxonomy_Cota::get_instance();
 		Admin\Importador::get_instance();
 		Admin\Admin_Filters::get_instance();
 		Admin\Seeder::get_instance();
@@ -95,10 +108,10 @@ final class Plugin {
 			return;
 		}
 
-		$allowed = array( 'pt_sessao', 'pt_participante' );
+		$allowed = array( 'pt_sessao', 'pt_participante', 'pt_patrocinador' );
 		$is_settings = ( 'toplevel_page_pt-event-settings' === $hook );
 		if ( in_array( $screen->post_type, $allowed, true ) || $is_settings ) {
-			if ( $is_settings || 'pt_participante' === $screen->post_type ) {
+			if ( $is_settings || in_array( $screen->post_type, array( 'pt_participante', 'pt_patrocinador' ), true ) ) {
 				wp_enqueue_media();
 			}
 			wp_enqueue_style(
