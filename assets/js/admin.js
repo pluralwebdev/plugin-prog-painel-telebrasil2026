@@ -8,6 +8,7 @@
 			this.initSortable();
 			this.initRemove();
 			this.initMediaUpload();
+			this.initBgImageUpload();
 		},
 
 		// =====================================================================
@@ -188,6 +189,48 @@
 				e.preventDefault();
 				$(this).siblings('input[type="hidden"]').val('');
 				$(this).siblings('.pt-event-foto-preview').html('');
+				$(this).hide();
+			});
+		},
+
+		// =====================================================================
+		// Media Upload (imagem de fundo do participante — Settings page)
+		// =====================================================================
+		initBgImageUpload: function () {
+			$(document).on('click', '.pt-event-upload-bg-image', function (e) {
+				e.preventDefault();
+				var $btn = $(this);
+				var targetId = $btn.data('target');
+
+				var frame = wp.media({
+					title: 'Selecionar Imagem de Fundo',
+					button: { text: 'Usar esta imagem' },
+					multiple: false,
+					library: { type: 'image' }
+				});
+
+				frame.on('select', function () {
+					var attachment = frame.state().get('selection').first().toJSON();
+					var url = attachment.sizes && attachment.sizes.medium
+						? attachment.sizes.medium.url
+						: attachment.url;
+
+					$('#' + targetId).val(attachment.id);
+					$btn.closest('.pt-event-image-upload-wrapper')
+						.find('.pt-event-image-preview')
+						.html('<img src="' + url + '" style="max-width:200px;max-height:200px;border-radius:8px;border:1px solid #ddd;" />');
+					$btn.siblings('.pt-event-remove-bg-image').show();
+				});
+
+				frame.open();
+			});
+
+			$(document).on('click', '.pt-event-remove-bg-image', function (e) {
+				e.preventDefault();
+				var targetId = $(this).data('target');
+				$('#' + targetId).val('');
+				$(this).closest('.pt-event-image-upload-wrapper')
+					.find('.pt-event-image-preview').html('');
 				$(this).hide();
 			});
 		},

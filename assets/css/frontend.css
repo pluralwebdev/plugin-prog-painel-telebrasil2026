@@ -163,31 +163,34 @@
    ========================================================================== */
 .pt-programacao .pt-time-nav-wrapper {
 	position: sticky !important;
-	top: 0 !important;
+	top: var(--pt-menu-height, 80px) !important;
 	z-index: 50 !important;
-	background: rgba(244, 246, 249, 0.92) !important;
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+	background: rgba(255, 255, 255, 0.95) !important;
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 	margin-top: 24px;
-	transition: box-shadow 0.2s;
+	transition: box-shadow 0.3s, background 0.3s;
+	padding: 0 !important;
 }
 
 .pt-programacao .pt-time-nav-wrapper.scrolled {
-	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+	background: rgba(255, 255, 255, 0.98) !important;
 }
 
 .pt-programacao .pt-time-nav {
 	display: flex !important;
 	align-items: center !important;
-	justify-content: center;
-	gap: 8px;
-	padding: 12px 16px;
+	justify-content: center !important;
+	gap: 6px;
+	padding: 10px 24px !important;
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
 	scrollbar-width: none;
-	max-width: 960px;
+	max-width: 100%;
 	margin: 0 auto;
+	-ms-overflow-style: none;
 }
 
 .pt-programacao .pt-time-nav::-webkit-scrollbar {
@@ -196,41 +199,82 @@
 
 .pt-programacao .pt-time-nav-day-label {
 	flex-shrink: 0;
-	font-size: 13px;
-	font-weight: 600;
+	font-size: 12px;
+	font-weight: 700;
 	color: var(--pt-primaria, #006B3F);
-	padding: 6px 14px;
+	padding: 7px 16px;
 	background: var(--pt-primaria-bg, #e8f5ee);
 	border-radius: 50px;
-	margin-right: 4px;
+	margin-right: 8px;
 	white-space: nowrap;
-	font-family: "ClashDisplay-Medium", "Inter", sans-serif;
+	font-family: "ClashDisplay-Semibold", "Inter", sans-serif;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+/* Fade indicators for scroll edges */
+.pt-programacao .pt-time-nav-wrapper::before,
+.pt-programacao .pt-time-nav-wrapper::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 32px;
+	pointer-events: none;
+	z-index: 2;
+	transition: opacity 0.3s;
+}
+
+.pt-programacao .pt-time-nav-wrapper::before {
+	left: 0;
+	background: linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent);
+}
+
+.pt-programacao .pt-time-nav-wrapper::after {
+	right: 0;
+	background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+}
+
+.pt-programacao .pt-time-nav-wrapper.scroll-start::before {
+	opacity: 0;
+}
+
+.pt-programacao .pt-time-nav-wrapper.scroll-end::after {
+	opacity: 0;
 }
 
 .pt-programacao .pt-time-pill {
 	flex-shrink: 0;
-	padding: 8px 18px;
+	padding: 8px 16px;
 	border-radius: 50px;
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 600;
-	border: 2px solid #d1d5db;
+	border: 2px solid #e2e5ea;
 	background: #fff;
 	color: var(--pt-texto, #6B7280);
 	cursor: pointer;
-	transition: all 0.2s;
+	transition: all 0.2s ease;
 	font-family: "ClashDisplay-Medium", "Inter", sans-serif;
 	white-space: nowrap;
+	line-height: 1;
+}
+
+.pt-programacao .pt-time-pill:last-child {
+	margin-right: 8px;
 }
 
 .pt-programacao .pt-time-pill:hover {
 	border-color: var(--pt-primaria, #006B3F);
 	color: var(--pt-primaria, #006B3F);
+	background: var(--pt-primaria-bg, #e8f5ee);
 }
 
 .pt-programacao .pt-time-pill.active {
-	background: var(--pt-primaria, #006B3F);
-	border-color: var(--pt-primaria, #006B3F);
-	color: #fff;
+	background: var(--pt-primaria, #006B3F) !important;
+	border-color: var(--pt-primaria, #006B3F) !important;
+	color: #fff !important;
+	box-shadow: 0 2px 8px rgba(0, 107, 63, 0.3);
+	transform: scale(1.05);
 }
 
 .pt-programacao .pt-time-pill-especial {
@@ -240,6 +284,7 @@
 
 .pt-programacao .pt-time-pill-especial:hover {
 	border-color: var(--pt-especial, #059669);
+	background: #ecfdf5;
 }
 
 /* ==========================================================================
@@ -400,6 +445,12 @@
 	justify-content: flex-start;
 }
 
+.pt-programacao .pt-participantes-grid {
+	display: grid !important;
+	grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+	gap: 16px 12px;
+}
+
 .pt-programacao .pt-participante-item {
 	text-align: center;
 	width: 120px;
@@ -508,7 +559,7 @@
 	}
 
 	.pt-programacao .pt-time-nav {
-		justify-content: flex-start;
+		justify-content: flex-start !important;
 		padding: 10px 12px;
 		gap: 6px;
 	}
@@ -685,5 +736,297 @@
 
 	.pt-programacao .pt-day-selector-bottom .pt-day-badge-num {
 		font-size: 32px;
+	}
+}
+
+/* ==========================================================================
+   SHARED — Card de Participante (usado em Home, Debatedores, Programação)
+   ==========================================================================
+   Referência Figma: bg 260×237, foto sobrepõe acima do bg.
+   Wrapper = 260×290 (espaço extra em cima para a cabeça).
+   BG alinhado à BASE do wrapper, cobrindo ~82% da altura.
+   ========================================================================== */
+.pt-card-participante {
+	text-align: center;
+	width: 100%;
+	max-width: 260px;
+	margin: 0 auto;
+}
+
+.pt-card-foto-wrapper {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 260 / 237;
+	overflow: hidden;
+	margin-bottom: 10px;
+}
+
+.pt-card-foto-bg {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: 1;
+}
+
+.pt-card-foto-person {
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 90%;
+	height: auto;
+	max-height: 100%;
+	object-fit: contain;
+	object-position: bottom center;
+	z-index: 2;
+}
+
+.pt-card-foto-placeholder {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 32px;
+	font-weight: 700;
+	color: var(--pt-escura, #0A1E3D);
+	background: transparent;
+	z-index: 2;
+}
+
+.pt-card-info {
+	padding: 4px 4px 0;
+}
+
+.pt-card-nome {
+	font-family: "ClashDisplay-Semibold", "Inter", sans-serif;
+	font-size: var(--pt-card-nome-size, 15px);
+	font-weight: 700;
+	color: var(--pt-cor-nome, #0A1E3D);
+	line-height: 1.25;
+	margin-bottom: 2px;
+}
+
+.pt-card-empresa {
+	font-family: "Inter", sans-serif;
+	font-size: var(--pt-card-cargo-size, 13px);
+	font-weight: 400;
+	color: var(--pt-cor-cargo, #6B7280);
+	line-height: 1.3;
+}
+
+/* --- Programação: cards menores 155×184 --- */
+.pt-programacao .pt-card-participante {
+	max-width: 155px;
+}
+
+.pt-programacao .pt-card-foto-wrapper {
+	aspect-ratio: 155 / 184;
+}
+
+.pt-programacao .pt-card-nome {
+	font-size: 12px;
+}
+
+.pt-programacao .pt-card-empresa {
+	font-size: 11px;
+}
+
+/* ==========================================================================
+   HOME CAROUSEL — [event_palestrantes_home]
+   ========================================================================== */
+.pt-home-carousel {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 40px 20px;
+}
+
+.pt-home-header {
+	text-align: center;
+	margin-bottom: 40px;
+}
+
+.pt-home-title {
+	font-family: "ClashDisplay-Semibold", "Inter", sans-serif;
+	font-size: 36px;
+	font-weight: 700;
+	color: var(--pt-escura, #0A1E3D);
+	margin: 0 0 8px;
+}
+
+.pt-home-subtitle {
+	font-family: "Inter", sans-serif;
+	font-size: 16px;
+	color: var(--pt-cor-cargo, #6B7280);
+	margin: 0;
+}
+
+.pt-home-slides-wrapper {
+	overflow: hidden;
+	position: relative;
+}
+
+.pt-home-slides {
+	display: flex;
+	transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	will-change: transform;
+}
+
+.pt-home-slide {
+	min-width: 100%;
+	flex-shrink: 0;
+}
+
+.pt-home-grid {
+	display: grid;
+	gap: 40px 20px;
+}
+
+/* Bullets — retangulares, verde e cinza como no design */
+.pt-home-bullets {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	margin-top: 32px;
+}
+
+.pt-home-bullet {
+	width: 48px;
+	height: 8px;
+	border: none;
+	border-radius: 4px;
+	background: #C4C9D1;
+	cursor: pointer;
+	transition: background 0.3s, width 0.3s;
+	padding: 0;
+}
+
+.pt-home-bullet.active {
+	background: var(--pt-primaria, #006B3F);
+	width: 56px;
+}
+
+.pt-home-bullet:hover:not(.active) {
+	background: #9CA3AF;
+}
+
+/* ==========================================================================
+   DEBATEDORES GRID — [event_debatedores]
+   ========================================================================== */
+.pt-debatedores {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 40px 20px;
+}
+
+.pt-debatedores-header {
+	text-align: center;
+	margin-bottom: 40px;
+}
+
+.pt-debatedores-title {
+	font-family: "ClashDisplay-Semibold", "Inter", sans-serif;
+	font-size: 36px;
+	font-weight: 700;
+	color: var(--pt-escura, #0A1E3D);
+	margin: 0 0 8px;
+}
+
+.pt-debatedores-subtitle {
+	font-family: "Inter", sans-serif;
+	font-size: 16px;
+	color: var(--pt-cor-cargo, #6B7280);
+	margin: 0;
+}
+
+.pt-debatedores-grid {
+	display: grid;
+	gap: 40px 24px;
+}
+
+/* ==========================================================================
+   Responsivo — Cards, Home Carousel, Debatedores
+   ========================================================================== */
+@media (max-width: 1024px) {
+	.pt-home-grid {
+		grid-template-columns: repeat(4, 1fr) !important;
+	}
+
+	.pt-debatedores-grid {
+		grid-template-columns: repeat(3, 1fr) !important;
+	}
+}
+
+@media (max-width: 768px) {
+	.pt-home-grid {
+		grid-template-columns: repeat(3, 1fr) !important;
+	}
+
+	.pt-debatedores-grid {
+		grid-template-columns: repeat(2, 1fr) !important;
+	}
+
+	.pt-home-title,
+	.pt-debatedores-title {
+		font-size: 28px;
+	}
+
+	.pt-home-bullet {
+		width: 36px;
+		height: 6px;
+	}
+
+	.pt-home-bullet.active {
+		width: 44px;
+	}
+
+	/* Programação: 2 col no tablet */
+	.pt-programacao .pt-participantes-grid {
+		grid-template-columns: repeat(3, 1fr) !important;
+	}
+}
+
+@media (max-width: 480px) {
+	.pt-home-grid {
+		grid-template-columns: repeat(2, 1fr) !important;
+		gap: 16px 10px;
+	}
+
+	.pt-debatedores-grid {
+		grid-template-columns: repeat(2, 1fr) !important;
+		gap: 16px 10px;
+	}
+
+	.pt-card-nome {
+		font-size: 13px;
+	}
+
+	.pt-card-empresa {
+		font-size: 11px;
+	}
+
+	/* Programação mob: cards pequenos, 2 col */
+	.pt-programacao .pt-participantes-grid {
+		grid-template-columns: repeat(2, 1fr) !important;
+		gap: 12px 8px;
+	}
+
+	.pt-programacao .pt-card-participante {
+		max-width: 120px;
+	}
+
+	.pt-programacao .pt-card-nome {
+		font-size: 11px;
+	}
+
+	.pt-programacao .pt-card-empresa {
+		font-size: 10px;
 	}
 }

@@ -18,6 +18,54 @@
 
 	currentDay = dayContents[0].id;
 	var isScrolling = false;
+	var menuHeight = 0;
+
+	/**
+	 * Detect main site menu height and set CSS variable.
+	 * Uses manual value from ptEventConfig.menuHeight if > 0.
+	 */
+	function detectMenuHeight() {
+		// Use manually configured value if provided
+		if (typeof ptEventConfig !== 'undefined' && parseInt(ptEventConfig.menuHeight, 10) > 0) {
+			menuHeight = parseInt(ptEventConfig.menuHeight, 10);
+			root.style.setProperty('--pt-menu-height', menuHeight + 'px');
+			return;
+		}
+
+		// Try common selectors for the site's sticky/fixed header
+		var header = document.querySelector(
+			'header.elementor-sticky, .elementor-sticky--active, ' +
+			'#masthead, .site-header, header#header, ' +
+			'nav.navbar, .elementor-location-header, ' +
+			'[data-elementor-type="header"]'
+		);
+		if (header) {
+			menuHeight = header.offsetHeight || 80;
+		} else {
+			// Fallback: check for any fixed/sticky element at top
+			var els = document.querySelectorAll('header, nav');
+			for (var i = 0; i < els.length; i++) {
+				var style = window.getComputedStyle(els[i]);
+				if (style.position === 'fixed' || style.position === 'sticky') {
+					menuHeight = els[i].offsetHeight || 80;
+					break;
+				}
+			}
+			if (!menuHeight) menuHeight = 80;
+		}
+		root.style.setProperty('--pt-menu-height', menuHeight + 'px');
+	}
+
+	/**
+	 * Update scroll-fade classes on wrapper based on nav scroll position
+	 */
+	function updateScrollFade() {
+		var scrollLeft = nav.scrollLeft;
+		var maxScroll = nav.scrollWidth - nav.clientWidth;
+
+		wrapper.classList.toggle('scroll-start', scrollLeft <= 2);
+		wrapper.classList.toggle('scroll-end', scrollLeft >= maxScroll - 2);
+	}
 
 	/**
 	 * Build time nav pills for active day
@@ -45,6 +93,10 @@
 				scrollToSession(this.getAttribute('data-hora'));
 			});
 		});
+
+		// Reset horizontal scroll and update fade
+		nav.scrollLeft = 0;
+		updateScrollFade();
 	}
 
 	/**
@@ -66,7 +118,7 @@
 	}
 
 	/**
-	 * Scroll to session by hora
+	 * Scroll to session by hora, accounting for menu + nav bar height
 	 */
 	function scrollToSession(hora) {
 		isScrolling = true;
@@ -76,11 +128,23 @@
 		});
 
 		var cards = root.querySelectorAll('#' + currentDay + ' .pt-sessao-card');
+		var offset = menuHeight + wrapper.offsetHeight + 16;
+
 		cards.forEach(function (card) {
 			if (card.getAttribute('data-hora') === hora) {
-				card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				var top = card.getBoundingClientRect().top + window.pageYOffset - offset;
+				window.scrollTo({ top: top, behavior: 'smooth' });
 			}
 		});
+
+		// Scroll the pill into horizontal view
+		var activePill = nav.querySelector('.pt-time-pill[data-hora="' + hora + '"]');
+		if (activePill) {
+			var navRect = nav.getBoundingClientRect();
+			var pillRect = activePill.getBoundingClientRect();
+			var center = (pillRect.left - navRect.left) - (navRect.width / 2) + (pillRect.width / 2);
+			nav.scrollBy({ left: center, behavior: 'smooth' });
+		}
 
 		setTimeout(function () { isScrolling = false; }, 800);
 	}
@@ -91,13 +155,14 @@
 	function updateActivePill() {
 		if (isScrolling) return;
 
+		var threshold = menuHeight + wrapper.offsetHeight + 40;
 		var cards = root.querySelectorAll('#' + currentDay + ' .pt-sessao-card');
 		var pills = nav.querySelectorAll('.pt-time-pill');
 		var found = -1;
 
 		cards.forEach(function (card, i) {
 			var rect = card.getBoundingClientRect();
-			if (rect.top <= 120) { found = i; }
+			if (rect.top <= threshold) { found = i; }
 		});
 
 		pills.forEach(function (p, i) {
@@ -109,13 +174,14 @@
 			var pill = pills[found];
 			var navRect = nav.getBoundingClientRect();
 			var pillRect = pill.getBoundingClientRect();
-			if (pillRect.left < navRect.left || pillRect.right > navRect.right) {
-				nav.scrollLeft += (pillRect.left - navRect.left) - (navRect.width / 2) + (pillRect.width / 2);
+			if (pillRect.left < navRect.left + 32 || pillRect.right > navRect.right - 32) {
+				var center = (pillRect.left - navRect.left) - (navRect.width / 2) + (pillRect.width / 2);
+				nav.scrollBy({ left: center, behavior: 'smooth' });
 			}
 		}
 	}
 
-	// Throttled scroll listener
+	// Throttled page scroll listener
 	var scrollTick = false;
 	window.addEventListener('scroll', function () {
 		if (wrapper) {
@@ -130,19 +196,105 @@
 		}
 	});
 
+	// Horizontal scroll listener on nav for fade indicators
+	nav.addEventListener('scroll', function () {
+		requestAnimationFrame(updateScrollFade);
+	});
+
 	// Bind all day badges (top and bottom)
 	root.querySelectorAll('.pt-day-badge').forEach(function (badge) {
 		badge.addEventListener('click', function () {
 			var dayId = this.getAttribute('data-day');
 			if (dayId) {
 				switchDay(dayId);
-				// Scroll to the programacao section, not page top
-				root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				var top = root.getBoundingClientRect().top + window.pageYOffset - menuHeight;
+				window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 			}
 		});
 	});
 
 	// Init
+	detectMenuHeight();
 	buildTimeNav(currentDay);
+	// Initial fade state
+	wrapper.classList.add('scroll-start');
 
+	// Re-detect menu height on resize
+	window.addEventListener('resize', function () {
+		detectMenuHeight();
+	});
+
+})();
+
+/**
+ * Home Carousel — Sliding transform + bullet navigation
+ */
+(function () {
+	'use strict';
+
+	var carousel = document.querySelector('.pt-home-carousel');
+	if (!carousel) return;
+
+	var slidesContainer = carousel.querySelector('#ptHomeSlides');
+	var slides = carousel.querySelectorAll('.pt-home-slide');
+	var bullets = carousel.querySelectorAll('.pt-home-bullet');
+	if (!slidesContainer || slides.length < 2) return;
+
+	var current = 0;
+	var autoTimer = null;
+	var autoplay = carousel.getAttribute('data-autoplay') !== '0';
+	var speed = parseInt(carousel.getAttribute('data-speed'), 10) || 6;
+
+	function goTo(index) {
+		if (index < 0) index = slides.length - 1;
+		if (index >= slides.length) index = 0;
+
+		bullets[current].classList.remove('active');
+		current = index;
+		bullets[current].classList.add('active');
+
+		slidesContainer.style.transform = 'translateX(-' + (current * 100) + '%)';
+	}
+
+	function startAuto() {
+		stopAuto();
+		if (!autoplay) return;
+		autoTimer = setInterval(function () {
+			goTo(current + 1);
+		}, speed * 1000);
+	}
+
+	function stopAuto() {
+		if (autoTimer) {
+			clearInterval(autoTimer);
+			autoTimer = null;
+		}
+	}
+
+	bullets.forEach(function (btn) {
+		btn.addEventListener('click', function () {
+			var idx = parseInt(this.getAttribute('data-slide'), 10);
+			goTo(idx);
+			startAuto();
+		});
+	});
+
+	// Touch / swipe support
+	var touchStartX = 0;
+	var touchEndX = 0;
+
+	slidesContainer.addEventListener('touchstart', function (e) {
+		touchStartX = e.changedTouches[0].screenX;
+	}, { passive: true });
+
+	slidesContainer.addEventListener('touchend', function (e) {
+		touchEndX = e.changedTouches[0].screenX;
+		var diff = touchStartX - touchEndX;
+		if (Math.abs(diff) > 50) {
+			goTo(diff > 0 ? current + 1 : current - 1);
+			startAuto();
+		}
+	}, { passive: true });
+
+	startAuto();
 })();

@@ -91,29 +91,15 @@ class Shortcode {
 										$participantes = Helpers::get_participantes_by_sessao( $sessao['id'] );
 										if ( ! empty( $participantes ) ) :
 											$grouped = $this->group_by_papel( $participantes );
+											$bg_url  = $this->get_bg_url( $settings );
 										?>
 											<div class="pt-participantes-area">
 												<?php foreach ( $grouped as $papel => $parts ) : ?>
 													<div class="pt-papel-section">
 														<div class="pt-papel-label"><?php echo esc_html( $papel ); ?></div>
-														<div class="pt-participantes-row">
+														<div class="pt-participantes-row pt-participantes-grid">
 															<?php foreach ( $parts as $part ) : ?>
-																<div class="pt-participante-item">
-																	<div class="pt-foto-circle">
-																		<?php
-																		$img_url = ! empty( $part['foto'] ) ? wp_get_attachment_image_url( $part['foto'], 'medium' ) : '';
-																		if ( $img_url ) :
-																		?>
-																			<img src="<?php echo esc_url( $img_url ); ?>" alt="<?php echo esc_attr( $part['nome'] ); ?>" loading="lazy" />
-																		<?php else : ?>
-																			<div class="pt-foto-placeholder"><?php echo esc_html( Helpers::get_initials( $part['nome'] ) ); ?></div>
-																		<?php endif; ?>
-																	</div>
-																	<div class="pt-part-nome"><?php echo esc_html( $part['nome'] ); ?></div>
-																	<?php if ( ! empty( $part['cargo'] ) ) : ?>
-																		<div class="pt-part-cargo"><?php echo esc_html( $part['cargo'] ); ?></div>
-																	<?php endif; ?>
-																</div>
+																<?php echo Shortcode_Cards::render_card( $part, $bg_url ); ?>
 															<?php endforeach; ?>
 														</div>
 													</div>
@@ -179,6 +165,11 @@ class Shortcode {
 		return $html;
 	}
 
+	private function get_bg_url( $settings ) {
+		$bg_id = isset( $settings['foto_fundo_participante'] ) ? absint( $settings['foto_fundo_participante'] ) : 0;
+		return $bg_id ? wp_get_attachment_image_url( $bg_id, 'medium_large' ) : '';
+	}
+
 	private function group_by_papel( $participantes ) {
 		$grouped = array();
 		foreach ( $participantes as $part ) {
@@ -205,8 +196,8 @@ class Shortcode {
 			'--pt-cor-cargo'      => $settings['cor_cargo_participante'],
 			'--pt-especial'       => $settings['cor_especial'],
 			'--pt-border-color'   => $settings['border_color'],
-			'--pt-border-width'   => $settings['border_width'] . 'px',
-			'--pt-border-radius'  => $settings['border_radius'] . '%',
+			'--pt-card-nome-size'  => ( ! empty( $settings['card_nome_size'] ) ? $settings['card_nome_size'] . 'px' : '15px' ),
+			'--pt-card-cargo-size' => ( ! empty( $settings['card_cargo_size'] ) ? $settings['card_cargo_size'] . 'px' : '13px' ),
 		);
 
 		$css = '';

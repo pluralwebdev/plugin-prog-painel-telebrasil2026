@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Programacao de Eventos
+ * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
- * Description: Plugin para cadastro e exibicao dinamica de programacao de eventos com sessoes e participantes.
- * Version:     1.0.0
+ * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
+ * Version:     1.1.0
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -30,8 +30,12 @@ require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-meta-boxes.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-sessao-participantes.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/settings/class-settings.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-cards.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-home.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-debatedores.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-importador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-admin-filters.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-seeder.php';
 
 final class Plugin {
 
@@ -78,8 +82,11 @@ final class Plugin {
 		Admin\Sessao_Participantes::get_instance();
 		Settings\Settings::get_instance();
 		Frontend\Shortcode::get_instance();
+		Frontend\Shortcode_Home::get_instance();
+		Frontend\Shortcode_Debatedores::get_instance();
 		Admin\Importador::get_instance();
 		Admin\Admin_Filters::get_instance();
+		Admin\Seeder::get_instance();
 	}
 
 	public function admin_assets( $hook ) {
@@ -89,7 +96,11 @@ final class Plugin {
 		}
 
 		$allowed = array( 'pt_sessao', 'pt_participante' );
-		if ( in_array( $screen->post_type, $allowed, true ) || 'toplevel_page_pt-event-settings' === $hook ) {
+		$is_settings = ( 'toplevel_page_pt-event-settings' === $hook );
+		if ( in_array( $screen->post_type, $allowed, true ) || $is_settings ) {
+			if ( $is_settings || 'pt_participante' === $screen->post_type ) {
+				wp_enqueue_media();
+			}
 			wp_enqueue_style(
 				'pt-event-admin',
 				PT_EVENT_PLUGIN_URL . 'assets/css/admin.css',
@@ -128,6 +139,11 @@ final class Plugin {
 			PT_EVENT_VERSION,
 			true
 		);
+
+		$menu_height = isset( $settings['menu_height'] ) ? absint( $settings['menu_height'] ) : 0;
+		wp_localize_script( 'pt-event-frontend', 'ptEventConfig', array(
+			'menuHeight' => $menu_height,
+		) );
 
 		if ( $custom_css ) {
 			wp_add_inline_style( 'pt-event-frontend', $custom_css );

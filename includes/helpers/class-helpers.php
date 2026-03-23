@@ -21,10 +21,14 @@ class Helpers {
 			'cor_cargo_participante' => '#6B7280',
 			'cor_especial'           => '#059669',
 			'border_color'           => '#006B3F',
-			'border_width'           => '3',
-			'border_radius'          => '50',
+			'foto_fundo_participante' => '0',
+			'card_nome_size'         => '15',
+			'card_cargo_size'        => '13',
+			'carousel_autoplay'      => '1',
+			'carousel_speed'         => '6',
 			'titulo_secao_sub'       => 'Confira',
 			'titulo_secao'           => 'Principais Temas',
+			'menu_height'            => '0',
 			'custom_css'             => '',
 		);
 
@@ -132,6 +136,84 @@ class Helpers {
 			$initials = mb_strtoupper( mb_substr( $parts[0], 0, 2 ) );
 		}
 		return $initials;
+	}
+
+	/**
+	 * Get all published & confirmed participants.
+	 */
+	public static function get_all_participantes( $tipo = '' ) {
+		$args = array(
+			'post_type'      => 'pt_participante',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+		);
+
+		if ( $tipo ) {
+			$args['meta_query'][] = array(
+				'key'   => '_pt_event_tipo_participante',
+				'value' => sanitize_text_field( $tipo ),
+			);
+		}
+
+		$posts = get_posts( $args );
+		$list  = array();
+
+		foreach ( $posts as $p ) {
+			$confirmado = get_post_meta( $p->ID, '_pt_event_confirmado', true );
+			if ( 'sim' !== $confirmado ) {
+				continue;
+			}
+			$list[] = self::build_participante_data( $p->ID );
+		}
+
+		return $list;
+	}
+
+	/**
+	 * Get participants flagged for home carousel.
+	 */
+	public static function get_participantes_home() {
+		$args = array(
+			'post_type'      => 'pt_participante',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'meta_query'     => array(
+				array(
+					'key'   => '_pt_event_exibir_home',
+					'value' => 'sim',
+				),
+			),
+		);
+
+		$posts = get_posts( $args );
+		$list  = array();
+
+		foreach ( $posts as $p ) {
+			$confirmado = get_post_meta( $p->ID, '_pt_event_confirmado', true );
+			if ( 'sim' !== $confirmado ) {
+				continue;
+			}
+			$list[] = self::build_participante_data( $p->ID );
+		}
+
+		return $list;
+	}
+
+	/**
+	 * Build participant data array from post ID.
+	 */
+	public static function build_participante_data( $id ) {
+		return array(
+			'id'               => $id,
+			'nome'             => get_post_meta( $id, '_pt_event_nome', true ),
+			'foto'             => get_post_meta( $id, '_pt_event_foto', true ),
+			'cargo'            => get_post_meta( $id, '_pt_event_cargo', true ),
+			'empresa'          => get_post_meta( $id, '_pt_event_empresa', true ),
+			'bio'              => get_post_meta( $id, '_pt_event_bio', true ),
+			'links'            => get_post_meta( $id, '_pt_event_links', true ),
+			'tipo_participante' => get_post_meta( $id, '_pt_event_tipo_participante', true ),
+			'exibir_home'      => get_post_meta( $id, '_pt_event_exibir_home', true ),
+		);
 	}
 
 	public static function format_dia_label( $dia ) {

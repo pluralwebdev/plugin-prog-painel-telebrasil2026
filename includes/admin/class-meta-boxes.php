@@ -87,6 +87,8 @@ class Meta_Boxes {
 			'nome'       => array( 'label' => __( 'Nome', 'pt-event' ), 'type' => 'text' ),
 			'cargo'      => array( 'label' => __( 'Cargo', 'pt-event' ), 'type' => 'textarea' ),
 			'empresa'    => array( 'label' => __( 'Empresa', 'pt-event' ), 'type' => 'text' ),
+			'tipo_participante' => array( 'label' => __( 'Tipo de Participante', 'pt-event' ), 'type' => 'select_tipo' ),
+			'exibir_home' => array( 'label' => __( 'Exibir na Home (carrossel)', 'pt-event' ), 'type' => 'checkbox' ),
 			'bio'        => array( 'label' => __( 'Bio', 'pt-event' ), 'type' => 'textarea' ),
 			'links'      => array( 'label' => __( 'Links (um por linha)', 'pt-event' ), 'type' => 'textarea' ),
 			'confirmado' => array( 'label' => __( 'Confirmado', 'pt-event' ), 'type' => 'select' ),
@@ -129,6 +131,25 @@ class Meta_Boxes {
 				echo '<option value="nao" ' . selected( $value, 'nao', false ) . '>' . esc_html__( 'Não', 'pt-event' ) . '</option>';
 				echo '<option value="sim" ' . selected( $value, 'sim', false ) . '>' . esc_html__( 'Sim', 'pt-event' ) . '</option>';
 				echo '</select>';
+			} elseif ( 'select_tipo' === $field['type'] ) {
+				$tipos = array(
+					''             => __( '— Selecionar —', 'pt-event' ),
+					'debatedor'    => __( 'Debatedor', 'pt-event' ),
+					'fireside'     => __( 'Fireside', 'pt-event' ),
+					'keynote'      => __( 'Keynote', 'pt-event' ),
+					'moderador'    => __( 'Moderador', 'pt-event' ),
+					'patrocinador' => __( 'Patrocinador', 'pt-event' ),
+				);
+				echo '<select id="' . esc_attr( $meta_key ) . '" name="' . esc_attr( $meta_key ) . '">';
+				foreach ( $tipos as $val => $label ) {
+					echo '<option value="' . esc_attr( $val ) . '" ' . selected( $value, $val, false ) . '>' . esc_html( $label ) . '</option>';
+				}
+				echo '</select>';
+			} elseif ( 'checkbox' === $field['type'] ) {
+				echo '<label>';
+				echo '<input type="checkbox" id="' . esc_attr( $meta_key ) . '" name="' . esc_attr( $meta_key ) . '" value="sim" ' . checked( $value, 'sim', false ) . ' />';
+				echo ' ' . esc_html__( 'Sim, exibir este participante no carrossel da home', 'pt-event' );
+				echo '</label>';
 			} else {
 				echo '<input type="' . esc_attr( $field['type'] ) . '" id="' . esc_attr( $meta_key ) . '" name="' . esc_attr( $meta_key ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
 			}
@@ -178,7 +199,7 @@ class Meta_Boxes {
 			return;
 		}
 
-		$fields = array( 'nome', 'foto', 'cargo', 'empresa', 'bio', 'links', 'confirmado' );
+		$fields = array( 'nome', 'foto', 'cargo', 'empresa', 'tipo_participante', 'bio', 'links', 'confirmado' );
 
 		foreach ( $fields as $field ) {
 			$meta_key = '_pt_event_' . $field;
@@ -193,5 +214,9 @@ class Meta_Boxes {
 				update_post_meta( $post_id, $meta_key, $value );
 			}
 		}
+
+		// Checkbox: unchecked means not in $_POST at all
+		$exibir_home = isset( $_POST['_pt_event_exibir_home'] ) ? 'sim' : 'nao';
+		update_post_meta( $post_id, '_pt_event_exibir_home', $exibir_home );
 	}
 }
