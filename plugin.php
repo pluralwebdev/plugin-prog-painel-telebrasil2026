@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.3.0
+ * Version:     1.4.0
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.3.0-' . time() );
+define( 'PT_EVENT_VERSION', '1.4.0' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -160,6 +160,24 @@ final class Plugin {
 
 		if ( $custom_css ) {
 			wp_add_inline_style( 'pt-event-frontend', $custom_css );
+		}
+
+		// Enqueue Google Fonts used in typography settings
+		$google_fonts = Helpers\Helpers::get_used_google_fonts();
+		if ( ! empty( $google_fonts ) ) {
+			$families = array();
+			foreach ( $google_fonts as $family => $weights ) {
+				$f = str_replace( ' ', '+', $family );
+				if ( ! empty( $weights ) ) {
+					sort( $weights );
+					$f .= ':wght@' . implode( ';', $weights );
+				}
+				$families[] = $f;
+			}
+			$url = 'https://fonts.googleapis.com/css2?' . implode( '&', array_map( function ( $f ) {
+				return 'family=' . $f;
+			}, $families ) ) . '&display=swap';
+			wp_enqueue_style( 'pt-event-google-fonts', $url, array(), null );
 		}
 	}
 }

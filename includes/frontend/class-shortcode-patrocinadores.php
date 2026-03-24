@@ -50,6 +50,10 @@ class Shortcode_Patrocinadores {
 			. '--pt-pat-title-color:' . $title_color . ';'
 			. '--pt-pat-title-size:' . $title_size . 'px;';
 
+		$css_vars .= Helpers::build_typography_css_vars( $settings, array(
+			'--pt-typo-pat-titulo' => 'typo_pat_titulo',
+		) );
+
 		ob_start();
 		?>
 		<div class="pt-patrocinadores" style="<?php echo esc_attr( $css_vars ); ?>">

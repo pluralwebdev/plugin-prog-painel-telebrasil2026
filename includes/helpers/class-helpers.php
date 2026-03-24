@@ -7,6 +7,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Helpers {
 
+	/** All typography group prefixes used across the plugin. */
+	public static function get_typography_prefixes() {
+		return array(
+			// Programação
+			'typo_prog_titulo',
+			'typo_prog_titulo_prefixo',
+			'typo_prog_subtitulo',
+			'typo_prog_descricao',
+			'typo_prog_dia',
+			'typo_prog_horario',
+			'typo_prog_part_nome',
+			'typo_prog_part_empresa',
+			// Carrossel
+			'typo_carousel_titulo',
+			'typo_carousel_subtitulo',
+			'typo_carousel_nome',
+			'typo_carousel_empresa',
+			// Debatedores
+			'typo_deb_titulo',
+			'typo_deb_subtitulo',
+			'typo_deb_nome',
+			'typo_deb_empresa',
+			// Patrocinadores
+			'typo_pat_titulo',
+		);
+	}
+
+	/** Suffixes for each typography group. */
+	public static function get_typography_suffixes() {
+		return array( 'font_family', 'font_size', 'font_weight', 'text_transform', 'font_style', 'text_decoration', 'line_height', 'letter_spacing' );
+	}
+
 	public static function get_settings() {
 		$defaults = array(
 			'cor_primaria'           => '#006B3F',
@@ -37,8 +69,72 @@ class Helpers {
 			'custom_css'             => '',
 		);
 
+		// Typography defaults (empty = inherit from CSS)
+		foreach ( self::get_typography_prefixes() as $prefix ) {
+			foreach ( self::get_typography_suffixes() as $suffix ) {
+				$defaults[ $prefix . '_' . $suffix ] = '';
+			}
+		}
+
 		$settings = get_option( 'pt_event_settings', array() );
 		return wp_parse_args( $settings, $defaults );
+	}
+
+	/**
+	 * Build inline CSS variables for a set of typography groups.
+	 *
+	 * @param array  $settings  Plugin settings array.
+	 * @param array  $map       Assoc array: CSS var prefix => settings prefix.
+	 *                          e.g. [ '--pt-typo-titulo' => 'typo_prog_titulo' ]
+	 * @return string CSS variable declarations.
+	 */
+	public static function build_typography_css_vars( $settings, $map ) {
+		$suffixes = self::get_typography_suffixes();
+		$units    = array(
+			'font_size'       => 'px',
+			'line_height'     => 'em',
+			'letter_spacing'  => 'px',
+		);
+
+		$css = '';
+		foreach ( $map as $css_prefix => $settings_prefix ) {
+			foreach ( $suffixes as $suffix ) {
+				$key = $settings_prefix . '_' . $suffix;
+				$val = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
+				if ( '' === $val ) {
+					continue;
+				}
+				$unit = isset( $units[ $suffix ] ) ? $units[ $suffix ] : '';
+				$prop = $css_prefix . '-' . str_replace( '_', '-', $suffix );
+				$css .= $prop . ':' . $val . $unit . ';';
+			}
+		}
+		return $css;
+	}
+
+	/**
+	 * Collect all unique Google Fonts families used in typography settings.
+	 */
+	public static function get_used_google_fonts() {
+		$settings = self::get_settings();
+		$system   = array( '', 'Arial', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Courier New' );
+		$fonts    = array();
+
+		foreach ( self::get_typography_prefixes() as $prefix ) {
+			$family = isset( $settings[ $prefix . '_font_family' ] ) ? $settings[ $prefix . '_font_family' ] : '';
+			if ( '' !== $family && ! in_array( $family, $system, true ) ) {
+				$weight = isset( $settings[ $prefix . '_font_weight' ] ) ? $settings[ $prefix . '_font_weight' ] : '';
+				$key    = $family;
+				if ( ! isset( $fonts[ $key ] ) ) {
+					$fonts[ $key ] = array();
+				}
+				if ( $weight && ! in_array( $weight, $fonts[ $key ], true ) ) {
+					$fonts[ $key ][] = $weight;
+				}
+			}
+		}
+
+		return $fonts;
 	}
 
 	public static function get_participantes_by_sessao( $sessao_id ) {

@@ -134,6 +134,35 @@ class Settings {
 
 		add_settings_field( 'custom_css', __( 'CSS adicional', 'pt-event' ),
 			array( $this, 'render_textarea_field' ), $page, 'pt_event_custom', array( 'key' => 'custom_css' ) );
+
+		// Tipografia — Programação
+		add_settings_section( 'pt_event_typo_prog', __( '🔤 Tipografia da Programação', 'pt-event' ),
+			function () { echo '<p class="description">' . esc_html__( 'Controle tipográfico de cada elemento textual do shortcode de programação.', 'pt-event' ) . '</p>'; },
+			$page
+		);
+
+		$prog_typo = array(
+			'typo_prog_titulo'          => __( 'Título da Sessão', 'pt-event' ),
+			'typo_prog_titulo_prefixo'  => __( 'Prefixo do Título (antes do " - ")', 'pt-event' ),
+			'typo_prog_subtitulo'       => __( 'Subtítulo da Sessão', 'pt-event' ),
+			'typo_prog_descricao'    => __( 'Descrição da Sessão', 'pt-event' ),
+			'typo_prog_dia'          => __( 'Dia (badge)', 'pt-event' ),
+			'typo_prog_horario'      => __( 'Horário (início/fim)', 'pt-event' ),
+			'typo_prog_part_nome'    => __( 'Nome do Participante', 'pt-event' ),
+			'typo_prog_part_empresa' => __( 'Empresa/Cargo do Participante', 'pt-event' ),
+		);
+
+		foreach ( $prog_typo as $prefix => $label ) {
+			add_settings_field( $prefix, $label,
+				array( $this, 'render_typography_group' ), $page, 'pt_event_typo_prog',
+				array( 'prefix' => $prefix )
+			);
+		}
+
+		add_settings_field( 'typo_prog_titulo_prefixo_color', __( 'Cor do Prefixo / Separador', 'pt-event' ),
+			array( $this, 'render_color_field' ), $page, 'pt_event_typo_prog',
+			array( 'key' => 'typo_prog_titulo_prefixo_color', 'desc' => __( 'Cor do texto "Painel 1" e do separador " – ". Vazio = herda do título.', 'pt-event' ) )
+		);
 	}
 
 	/* ======================================================================
@@ -181,6 +210,46 @@ class Settings {
 			array( $this, 'render_number_field' ), $page, 'pt_event_carousel',
 			array( 'key' => 'carousel_speed', 'min' => 1, 'max' => 30, 'desc' => __( 'Tempo em segundos entre cada slide', 'pt-event' ) )
 		);
+
+		// Tipografia — Carrossel
+		add_settings_section( 'pt_event_typo_carousel', __( '🔤 Tipografia do Carrossel', 'pt-event' ),
+			function () { echo '<p class="description">' . esc_html__( 'Fontes dos títulos e cards do carrossel da home.', 'pt-event' ) . '</p>'; },
+			$page
+		);
+
+		$carousel_typo = array(
+			'typo_carousel_titulo'    => __( 'Título do Carrossel', 'pt-event' ),
+			'typo_carousel_subtitulo' => __( 'Subtítulo do Carrossel', 'pt-event' ),
+			'typo_carousel_nome'      => __( 'Nome no Card (Carrossel)', 'pt-event' ),
+			'typo_carousel_empresa'   => __( 'Empresa/Cargo no Card (Carrossel)', 'pt-event' ),
+		);
+
+		foreach ( $carousel_typo as $prefix => $label ) {
+			add_settings_field( $prefix, $label,
+				array( $this, 'render_typography_group' ), $page, 'pt_event_typo_carousel',
+				array( 'prefix' => $prefix )
+			);
+		}
+
+		// Tipografia — Debatedores
+		add_settings_section( 'pt_event_typo_deb', __( '🔤 Tipografia dos Debatedores', 'pt-event' ),
+			function () { echo '<p class="description">' . esc_html__( 'Fontes dos títulos e cards da listagem de debatedores.', 'pt-event' ) . '</p>'; },
+			$page
+		);
+
+		$deb_typo = array(
+			'typo_deb_titulo'    => __( 'Título Debatedores', 'pt-event' ),
+			'typo_deb_subtitulo' => __( 'Subtítulo Debatedores', 'pt-event' ),
+			'typo_deb_nome'      => __( 'Nome no Card (Debatedores)', 'pt-event' ),
+			'typo_deb_empresa'   => __( 'Empresa/Cargo no Card (Debatedores)', 'pt-event' ),
+		);
+
+		foreach ( $deb_typo as $prefix => $label ) {
+			add_settings_field( $prefix, $label,
+				array( $this, 'render_typography_group' ), $page, 'pt_event_typo_deb',
+				array( 'prefix' => $prefix )
+			);
+		}
 	}
 
 	/* ======================================================================
@@ -222,6 +291,17 @@ class Settings {
 		add_settings_field( 'pat_title_size', __( 'Tamanho do título (px)', 'pt-event' ),
 			array( $this, 'render_number_field' ), $page, 'pt_event_pat_title',
 			array( 'key' => 'pat_title_size', 'min' => 12, 'max' => 48, 'desc' => __( 'px', 'pt-event' ) )
+		);
+
+		// Tipografia — Patrocinadores
+		add_settings_section( 'pt_event_typo_pat', __( '🔤 Tipografia do Título', 'pt-event' ),
+			function () { echo '<p class="description">' . esc_html__( 'Controle tipográfico completo do título de cada seção de patrocinadores.', 'pt-event' ) . '</p>'; },
+			$page
+		);
+
+		add_settings_field( 'typo_pat_titulo', __( 'Título da Seção (Cota)', 'pt-event' ),
+			array( $this, 'render_typography_group' ), $page, 'pt_event_typo_pat',
+			array( 'prefix' => 'typo_pat_titulo' )
 		);
 	}
 
@@ -303,6 +383,122 @@ class Settings {
 	}
 
 	/* ------------------------------------------------------------------
+	   Typography helpers
+	   ------------------------------------------------------------------ */
+
+	private function get_font_choices() {
+		return array(
+			''                     => __( '— Padrão do tema —', 'pt-event' ),
+			'Inter'                => 'Inter',
+			'Roboto'               => 'Roboto',
+			'Open Sans'            => 'Open Sans',
+			'Montserrat'           => 'Montserrat',
+			'Poppins'              => 'Poppins',
+			'Lato'                 => 'Lato',
+			'Oswald'               => 'Oswald',
+			'Raleway'              => 'Raleway',
+			'Playfair Display'     => 'Playfair Display',
+			'Nunito'               => 'Nunito',
+			'Merriweather'         => 'Merriweather',
+			'Barlow'               => 'Barlow',
+			'Barlow Condensed'     => 'Barlow Condensed',
+			'Source Sans 3'        => 'Source Sans 3',
+			'DM Sans'              => 'DM Sans',
+			'Bebas Neue'           => 'Bebas Neue',
+			'Titillium Web'        => 'Titillium Web',
+			'Neue Haas Display'    => 'NeueHaasDisplay',
+			'Clash Display'        => 'ClashDisplay-Semibold',
+			'Arial'                => 'Arial',
+			'Georgia'              => 'Georgia',
+			'Times New Roman'      => 'Times New Roman',
+			'Verdana'              => 'Verdana',
+		);
+	}
+
+	public function render_typography_group( $args ) {
+		$prefix   = $args['prefix'];
+		$settings = \PTEvent\Helpers\Helpers::get_settings();
+		$fonts    = $this->get_font_choices();
+
+		$family     = $settings[ $prefix . '_font_family' ];
+		$size       = $settings[ $prefix . '_font_size' ];
+		$weight     = $settings[ $prefix . '_font_weight' ];
+		$transform  = $settings[ $prefix . '_text_transform' ];
+		$style      = $settings[ $prefix . '_font_style' ];
+		$decoration = $settings[ $prefix . '_text_decoration' ];
+		$lh         = $settings[ $prefix . '_line_height' ];
+		$ls         = $settings[ $prefix . '_letter_spacing' ];
+
+		$n = 'pt_event_settings[' . $prefix;
+		?>
+		<div class="pt-typo-group">
+			<div class="pt-typo-row">
+				<label class="pt-typo-field pt-typo-field--wide">
+					<span class="pt-typo-label"><?php esc_html_e( 'Família', 'pt-event' ); ?></span>
+					<select name="<?php echo esc_attr( $n ); ?>_font_family]">
+						<?php foreach ( $fonts as $val => $label ) : ?>
+							<option value="<?php echo esc_attr( $val ); ?>" <?php selected( $family, $val ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+				<label class="pt-typo-field">
+					<span class="pt-typo-label"><?php esc_html_e( 'Tamanho', 'pt-event' ); ?></span>
+					<span class="pt-typo-input-wrap"><input type="number" name="<?php echo esc_attr( $n ); ?>_font_size]" value="<?php echo esc_attr( $size ); ?>" min="8" max="120" step="1" placeholder="—" /><small>px</small></span>
+				</label>
+				<label class="pt-typo-field">
+					<span class="pt-typo-label"><?php esc_html_e( 'Peso', 'pt-event' ); ?></span>
+					<select name="<?php echo esc_attr( $n ); ?>_font_weight]">
+						<option value="" <?php selected( $weight, '' ); ?>>— Padrão —</option>
+						<?php foreach ( array( 100 => 'Thin', 200 => 'Extra Light', 300 => 'Light', 400 => 'Normal', 500 => 'Medium', 600 => 'Semi Bold', 700 => 'Bold', 800 => 'Extra Bold', 900 => 'Black' ) as $w => $wl ) : ?>
+							<option value="<?php echo $w; ?>" <?php selected( $weight, (string) $w ); ?>><?php echo $w . ' ' . $wl; ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+			</div>
+			<div class="pt-typo-row">
+				<label class="pt-typo-field">
+					<span class="pt-typo-label"><?php esc_html_e( 'Transformação', 'pt-event' ); ?></span>
+					<select name="<?php echo esc_attr( $n ); ?>_text_transform]">
+						<option value="" <?php selected( $transform, '' ); ?>>— Padrão —</option>
+						<option value="none" <?php selected( $transform, 'none' ); ?>><?php esc_html_e( 'Nenhuma', 'pt-event' ); ?></option>
+						<option value="uppercase" <?php selected( $transform, 'uppercase' ); ?>>MAIÚSCULAS</option>
+						<option value="lowercase" <?php selected( $transform, 'lowercase' ); ?>>minúsculas</option>
+						<option value="capitalize" <?php selected( $transform, 'capitalize' ); ?>>Capitalizar</option>
+					</select>
+				</label>
+				<label class="pt-typo-field">
+					<span class="pt-typo-label"><?php esc_html_e( 'Estilo', 'pt-event' ); ?></span>
+					<select name="<?php echo esc_attr( $n ); ?>_font_style]">
+						<option value="" <?php selected( $style, '' ); ?>>— Padrão —</option>
+						<option value="normal" <?php selected( $style, 'normal' ); ?>>Normal</option>
+						<option value="italic" <?php selected( $style, 'italic' ); ?>>Itálico</option>
+					</select>
+				</label>
+				<label class="pt-typo-field">
+					<span class="pt-typo-label"><?php esc_html_e( 'Decoração', 'pt-event' ); ?></span>
+					<select name="<?php echo esc_attr( $n ); ?>_text_decoration]">
+						<option value="" <?php selected( $decoration, '' ); ?>>— Padrão —</option>
+						<option value="none" <?php selected( $decoration, 'none' ); ?>><?php esc_html_e( 'Nenhuma', 'pt-event' ); ?></option>
+						<option value="underline" <?php selected( $decoration, 'underline' ); ?>>Sublinhado</option>
+						<option value="line-through" <?php selected( $decoration, 'line-through' ); ?>>Riscado</option>
+					</select>
+				</label>
+			</div>
+			<div class="pt-typo-row">
+				<label class="pt-typo-field">
+					<span class="pt-typo-label"><?php esc_html_e( 'Altura da linha', 'pt-event' ); ?></span>
+					<span class="pt-typo-input-wrap"><input type="number" name="<?php echo esc_attr( $n ); ?>_line_height]" value="<?php echo esc_attr( $lh ); ?>" min="0.5" max="5" step="0.1" placeholder="—" /><small>em</small></span>
+				</label>
+				<label class="pt-typo-field">
+					<span class="pt-typo-label"><?php esc_html_e( 'Espaçamento letras', 'pt-event' ); ?></span>
+					<span class="pt-typo-input-wrap"><input type="number" name="<?php echo esc_attr( $n ); ?>_letter_spacing]" value="<?php echo esc_attr( $ls ); ?>" min="-5" max="20" step="0.5" placeholder="—" /><small>px</small></span>
+				</label>
+			</div>
+		</div>
+		<?php
+	}
+
+	/* ------------------------------------------------------------------
 	   Sanitize
 	   ------------------------------------------------------------------ */
 
@@ -358,6 +554,22 @@ class Settings {
 		if ( isset( $input['custom_css'] ) ) {
 			$sanitized['custom_css'] = wp_strip_all_tags( $input['custom_css'] );
 		}
+		if ( isset( $input['typo_prog_titulo_prefixo_color'] ) ) {
+			$sanitized['typo_prog_titulo_prefixo_color'] = sanitize_hex_color( $input['typo_prog_titulo_prefixo_color'] );
+		}
+
+		// Typography fields
+		$typo_prefixes = \PTEvent\Helpers\Helpers::get_typography_prefixes();
+		$typo_suffixes = \PTEvent\Helpers\Helpers::get_typography_suffixes();
+
+		foreach ( $typo_prefixes as $prefix ) {
+			foreach ( $typo_suffixes as $suffix ) {
+				$key = $prefix . '_' . $suffix;
+				if ( isset( $input[ $key ] ) ) {
+					$sanitized[ $key ] = sanitize_text_field( $input[ $key ] );
+				}
+			}
+		}
 
 		return $sanitized;
 	}
@@ -403,9 +615,21 @@ class Settings {
 			.pt-event-settings-wrap .nav-tab-wrapper { margin-bottom: 20px; }
 			.pt-event-settings-wrap .nav-tab { font-size: 14px; padding: 8px 16px; }
 			.pt-event-settings-wrap .nav-tab-active { background: #fff; border-bottom-color: #fff; font-weight: 600; }
-			.pt-event-settings-wrap .form-table th { width: 220px; font-weight: 600; }
+			.pt-event-settings-wrap .form-table th { width: 220px; font-weight: 600; vertical-align: top; padding-top: 18px; }
 			.pt-event-settings-wrap h2 { margin-top: 30px; padding: 12px 0 8px; border-bottom: 2px solid #006B3F; color: #0A1E3D; }
 			.pt-event-settings-wrap .description { color: #666; font-style: italic; margin-top: 4px; }
+			/* Typography group */
+			.pt-typo-group { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 14px; max-width: 680px; }
+			.pt-typo-row { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+			.pt-typo-row:last-child { margin-bottom: 0; }
+			.pt-typo-field { display: flex; flex-direction: column; gap: 3px; min-width: 130px; flex: 1; }
+			.pt-typo-field--wide { flex: 2; min-width: 200px; }
+			.pt-typo-label { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+			.pt-typo-field select,
+			.pt-typo-field input[type="number"] { width: 100%; padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; background: #fff; }
+			.pt-typo-field input[type="number"] { width: 70px; }
+			.pt-typo-input-wrap { display: flex; align-items: center; gap: 4px; }
+			.pt-typo-input-wrap small { color: #888; font-size: 11px; }
 		</style>
 		<?php
 	}

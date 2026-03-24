@@ -41,6 +41,12 @@ class Shortcode_Home {
 		$pages    = array_chunk( $participantes, $per_page );
 		$bg_url   = $this->get_bg_url( $settings );
 		$css_vars = Shortcode_Cards::build_card_css_vars( $settings );
+		$css_vars .= Helpers::build_typography_css_vars( $settings, array(
+			'--pt-typo-carousel-titulo'    => 'typo_carousel_titulo',
+			'--pt-typo-carousel-subtitulo' => 'typo_carousel_subtitulo',
+			'--pt-typo-carousel-nome'      => 'typo_carousel_nome',
+			'--pt-typo-carousel-empresa'   => 'typo_carousel_empresa',
+		) );
 		$autoplay = ! empty( $settings['carousel_autoplay'] ) ? '1' : '0';
 		$speed    = ! empty( $settings['carousel_speed'] ) ? intval( $settings['carousel_speed'] ) : 6;
 

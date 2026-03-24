@@ -79,7 +79,16 @@ class Shortcode {
 											<?php endif; ?>
 
 											<?php if ( ! empty( $sessao['titulo'] ) ) : ?>
-												<div class="pt-sessao-titulo"><?php echo esc_html( $sessao['titulo'] ); ?></div>
+												<div class="pt-sessao-titulo"><?php
+													$t_parts = explode( ' - ', $sessao['titulo'], 2 );
+													if ( count( $t_parts ) === 2 ) {
+														echo '<span class="pt-sessao-titulo-prefixo">' . esc_html( $t_parts[0] ) . '</span>';
+														echo '<span class="pt-sessao-titulo-sep"> – </span>';
+														echo '<span class="pt-sessao-titulo-texto">' . esc_html( $t_parts[1] ) . '</span>';
+													} else {
+														echo esc_html( $sessao['titulo'] );
+													}
+												?></div>
 											<?php endif; ?>
 
 											<?php if ( ! empty( $sessao['descricao'] ) ) : ?>
@@ -204,6 +213,24 @@ class Shortcode {
 		foreach ( $vars as $prop => $val ) {
 			$css .= $prop . ':' . $val . ';';
 		}
+
+		// Typography CSS variables for programação elements
+		// Prefix/separator color
+		if ( ! empty( $settings['typo_prog_titulo_prefixo_color'] ) ) {
+			$css .= '--pt-typo-titulo-prefixo-color:' . $settings['typo_prog_titulo_prefixo_color'] . ';';
+		}
+
+		$css .= Helpers::build_typography_css_vars( $settings, array(
+			'--pt-typo-titulo'          => 'typo_prog_titulo',
+			'--pt-typo-titulo-prefixo'  => 'typo_prog_titulo_prefixo',
+			'--pt-typo-subtitulo'    => 'typo_prog_subtitulo',
+			'--pt-typo-descricao'    => 'typo_prog_descricao',
+			'--pt-typo-dia'          => 'typo_prog_dia',
+			'--pt-typo-horario'      => 'typo_prog_horario',
+			'--pt-typo-part-nome'    => 'typo_prog_part_nome',
+			'--pt-typo-part-empresa' => 'typo_prog_part_empresa',
+		) );
+
 		return $css;
 	}
 }

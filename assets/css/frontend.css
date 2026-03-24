@@ -1132,3 +1132,210 @@ a.pt-pat-card:hover {
 		font-size: 16px;
 	}
 }
+
+/* ==========================================================================
+   TYPOGRAPHY OVERRIDES — Plugin Settings
+   CSS custom properties set via shortcode inline styles.
+   Fallback = original hardcoded value (zero visual change when empty).
+   Placed AFTER responsive rules so user settings always win.
+   ========================================================================== */
+
+/* --- Programação: Título da Sessão --- */
+.pt-programacao .pt-sessao-titulo {
+	font-family: var(--pt-typo-titulo-font-family, "ClashDisplay-Bold", "ClashDisplay-Semibold", sans-serif);
+	font-size: var(--pt-typo-titulo-font-size, 24px);
+	font-weight: var(--pt-typo-titulo-font-weight, 700);
+	line-height: var(--pt-typo-titulo-line-height, 1.25);
+	letter-spacing: var(--pt-typo-titulo-letter-spacing, -0.02em);
+	text-transform: var(--pt-typo-titulo-text-transform, none);
+	font-style: var(--pt-typo-titulo-font-style, normal);
+	text-decoration: var(--pt-typo-titulo-text-decoration, none);
+}
+
+/* --- Programação: Prefixo do Título (antes do " - ") --- */
+.pt-programacao .pt-sessao-titulo-prefixo {
+	font-family: var(--pt-typo-titulo-prefixo-font-family, inherit);
+	font-size: var(--pt-typo-titulo-prefixo-font-size, inherit);
+	font-weight: var(--pt-typo-titulo-prefixo-font-weight, inherit);
+	line-height: var(--pt-typo-titulo-prefixo-line-height, inherit);
+	letter-spacing: var(--pt-typo-titulo-prefixo-letter-spacing, inherit);
+	text-transform: var(--pt-typo-titulo-prefixo-text-transform, inherit);
+	font-style: var(--pt-typo-titulo-prefixo-font-style, inherit);
+	text-decoration: var(--pt-typo-titulo-prefixo-text-decoration, inherit);
+	color: var(--pt-typo-titulo-prefixo-color, inherit);
+}
+
+.pt-programacao .pt-sessao-titulo-sep {
+	color: var(--pt-typo-titulo-prefixo-color, rgba(0, 0, 0, 0.3)) !important;
+	opacity: 1 !important;
+	font-weight: inherit;
+}
+
+/* --- Programação: Subtítulo da Sessão --- */
+.pt-programacao .pt-sessao-tipo {
+	font-family: var(--pt-typo-subtitulo-font-family, "ClashDisplay-Medium", "Inter", sans-serif);
+	font-size: var(--pt-typo-subtitulo-font-size, 12px);
+	font-weight: var(--pt-typo-subtitulo-font-weight, 600);
+	letter-spacing: var(--pt-typo-subtitulo-letter-spacing, 1.5px);
+	text-transform: var(--pt-typo-subtitulo-text-transform, uppercase);
+	font-style: var(--pt-typo-subtitulo-font-style, normal);
+	text-decoration: var(--pt-typo-subtitulo-text-decoration, none);
+	line-height: var(--pt-typo-subtitulo-line-height, 1.4);
+}
+
+/* --- Programação: Descrição da Sessão --- */
+.pt-programacao .pt-sessao-desc {
+	font-family: var(--pt-typo-descricao-font-family, "ClashDisplay-Regular", "Inter", sans-serif);
+	font-size: var(--pt-typo-descricao-font-size, 15px);
+	font-weight: var(--pt-typo-descricao-font-weight, 400);
+	line-height: var(--pt-typo-descricao-line-height, 1.65);
+	letter-spacing: var(--pt-typo-descricao-letter-spacing, normal);
+	text-transform: var(--pt-typo-descricao-text-transform, none);
+	font-style: var(--pt-typo-descricao-font-style, normal);
+	text-decoration: var(--pt-typo-descricao-text-decoration, none);
+}
+
+/* --- Programação: Dia (badge) --- */
+.pt-programacao .pt-day-badge {
+	font-family: var(--pt-typo-dia-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-style: var(--pt-typo-dia-font-style, normal);
+	letter-spacing: var(--pt-typo-dia-letter-spacing, normal);
+}
+
+.pt-programacao .pt-day-badge-num {
+	font-size: var(--pt-typo-dia-font-size, 38px);
+	font-weight: var(--pt-typo-dia-font-weight, 800);
+	line-height: var(--pt-typo-dia-line-height, 1);
+}
+
+/* --- Programação: Horário --- */
+.pt-programacao .pt-timeline-hora-inicio {
+	font-family: var(--pt-typo-horario-font-family, inherit);
+	font-size: var(--pt-typo-horario-font-size, 28px);
+	font-weight: var(--pt-typo-horario-font-weight, 700);
+	letter-spacing: var(--pt-typo-horario-letter-spacing, -0.02em);
+	line-height: var(--pt-typo-horario-line-height, 1);
+	font-style: var(--pt-typo-horario-font-style, normal);
+}
+
+/* --- Programação: Nome do Participante --- */
+.pt-programacao .pt-card-nome {
+	font-family: var(--pt-typo-part-nome-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-part-nome-font-size, 12px);
+	font-weight: var(--pt-typo-part-nome-font-weight, 700);
+	letter-spacing: var(--pt-typo-part-nome-letter-spacing, normal);
+	text-transform: var(--pt-typo-part-nome-text-transform, none);
+	font-style: var(--pt-typo-part-nome-font-style, normal);
+	line-height: var(--pt-typo-part-nome-line-height, 1.25);
+}
+
+/* --- Programação: Empresa do Participante --- */
+.pt-programacao .pt-card-empresa {
+	font-family: var(--pt-typo-part-empresa-font-family, "Inter", sans-serif);
+	font-size: var(--pt-typo-part-empresa-font-size, 11px);
+	font-weight: var(--pt-typo-part-empresa-font-weight, 400);
+	letter-spacing: var(--pt-typo-part-empresa-letter-spacing, normal);
+	text-transform: var(--pt-typo-part-empresa-text-transform, none);
+	font-style: var(--pt-typo-part-empresa-font-style, normal);
+	line-height: var(--pt-typo-part-empresa-line-height, 1.3);
+}
+
+/* --- Carrossel: Título --- */
+.pt-home-carousel .pt-home-title {
+	font-family: var(--pt-typo-carousel-titulo-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-carousel-titulo-font-size, 36px);
+	font-weight: var(--pt-typo-carousel-titulo-font-weight, 700);
+	line-height: var(--pt-typo-carousel-titulo-line-height, 1.2);
+	letter-spacing: var(--pt-typo-carousel-titulo-letter-spacing, normal);
+	text-transform: var(--pt-typo-carousel-titulo-text-transform, none);
+	font-style: var(--pt-typo-carousel-titulo-font-style, normal);
+	text-decoration: var(--pt-typo-carousel-titulo-text-decoration, none);
+}
+
+/* --- Carrossel: Subtítulo --- */
+.pt-home-carousel .pt-home-subtitle {
+	font-family: var(--pt-typo-carousel-subtitulo-font-family, "Inter", sans-serif);
+	font-size: var(--pt-typo-carousel-subtitulo-font-size, 16px);
+	font-weight: var(--pt-typo-carousel-subtitulo-font-weight, 400);
+	line-height: var(--pt-typo-carousel-subtitulo-line-height, 1.5);
+	letter-spacing: var(--pt-typo-carousel-subtitulo-letter-spacing, normal);
+	text-transform: var(--pt-typo-carousel-subtitulo-text-transform, none);
+	font-style: var(--pt-typo-carousel-subtitulo-font-style, normal);
+	text-decoration: var(--pt-typo-carousel-subtitulo-text-decoration, none);
+}
+
+/* --- Carrossel: Nome no Card --- */
+.pt-home-carousel .pt-card-nome {
+	font-family: var(--pt-typo-carousel-nome-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-carousel-nome-font-size, var(--pt-card-nome-size, 15px));
+	font-weight: var(--pt-typo-carousel-nome-font-weight, 700);
+	letter-spacing: var(--pt-typo-carousel-nome-letter-spacing, normal);
+	text-transform: var(--pt-typo-carousel-nome-text-transform, none);
+	line-height: var(--pt-typo-carousel-nome-line-height, 1.25);
+}
+
+/* --- Carrossel: Empresa no Card --- */
+.pt-home-carousel .pt-card-empresa {
+	font-family: var(--pt-typo-carousel-empresa-font-family, "Inter", sans-serif);
+	font-size: var(--pt-typo-carousel-empresa-font-size, var(--pt-card-cargo-size, 13px));
+	font-weight: var(--pt-typo-carousel-empresa-font-weight, 400);
+	letter-spacing: var(--pt-typo-carousel-empresa-letter-spacing, normal);
+	text-transform: var(--pt-typo-carousel-empresa-text-transform, none);
+	line-height: var(--pt-typo-carousel-empresa-line-height, 1.3);
+}
+
+/* --- Debatedores: Título --- */
+.pt-debatedores .pt-debatedores-title {
+	font-family: var(--pt-typo-deb-titulo-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-deb-titulo-font-size, 36px);
+	font-weight: var(--pt-typo-deb-titulo-font-weight, 700);
+	line-height: var(--pt-typo-deb-titulo-line-height, 1.2);
+	letter-spacing: var(--pt-typo-deb-titulo-letter-spacing, normal);
+	text-transform: var(--pt-typo-deb-titulo-text-transform, none);
+	font-style: var(--pt-typo-deb-titulo-font-style, normal);
+	text-decoration: var(--pt-typo-deb-titulo-text-decoration, none);
+}
+
+/* --- Debatedores: Subtítulo --- */
+.pt-debatedores .pt-debatedores-subtitle {
+	font-family: var(--pt-typo-deb-subtitulo-font-family, "Inter", sans-serif);
+	font-size: var(--pt-typo-deb-subtitulo-font-size, 16px);
+	font-weight: var(--pt-typo-deb-subtitulo-font-weight, 400);
+	line-height: var(--pt-typo-deb-subtitulo-line-height, 1.5);
+	letter-spacing: var(--pt-typo-deb-subtitulo-letter-spacing, normal);
+	text-transform: var(--pt-typo-deb-subtitulo-text-transform, none);
+	font-style: var(--pt-typo-deb-subtitulo-font-style, normal);
+	text-decoration: var(--pt-typo-deb-subtitulo-text-decoration, none);
+}
+
+/* --- Debatedores: Nome no Card --- */
+.pt-debatedores .pt-card-nome {
+	font-family: var(--pt-typo-deb-nome-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-deb-nome-font-size, var(--pt-card-nome-size, 15px));
+	font-weight: var(--pt-typo-deb-nome-font-weight, 700);
+	letter-spacing: var(--pt-typo-deb-nome-letter-spacing, normal);
+	text-transform: var(--pt-typo-deb-nome-text-transform, none);
+	line-height: var(--pt-typo-deb-nome-line-height, 1.25);
+}
+
+/* --- Debatedores: Empresa no Card --- */
+.pt-debatedores .pt-card-empresa {
+	font-family: var(--pt-typo-deb-empresa-font-family, "Inter", sans-serif);
+	font-size: var(--pt-typo-deb-empresa-font-size, var(--pt-card-cargo-size, 13px));
+	font-weight: var(--pt-typo-deb-empresa-font-weight, 400);
+	letter-spacing: var(--pt-typo-deb-empresa-letter-spacing, normal);
+	text-transform: var(--pt-typo-deb-empresa-text-transform, none);
+	line-height: var(--pt-typo-deb-empresa-line-height, 1.3);
+}
+
+/* --- Patrocinadores: Título da Seção --- */
+.pt-pat-section-title {
+	font-family: var(--pt-typo-pat-titulo-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-pat-titulo-font-size, var(--pt-pat-title-size, 20px));
+	font-weight: var(--pt-typo-pat-titulo-font-weight, 700);
+	line-height: var(--pt-typo-pat-titulo-line-height, 1.2);
+	letter-spacing: var(--pt-typo-pat-titulo-letter-spacing, 2px);
+	text-transform: var(--pt-typo-pat-titulo-text-transform, uppercase);
+	font-style: var(--pt-typo-pat-titulo-font-style, normal);
+	text-decoration: var(--pt-typo-pat-titulo-text-decoration, none);
+}

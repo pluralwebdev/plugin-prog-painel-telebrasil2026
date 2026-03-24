@@ -39,6 +39,12 @@ class Shortcode_Debatedores {
 
 		$bg_url   = $this->get_bg_url( $settings );
 		$css_vars = Shortcode_Cards::build_card_css_vars( $settings );
+		$css_vars .= Helpers::build_typography_css_vars( $settings, array(
+			'--pt-typo-deb-titulo'    => 'typo_deb_titulo',
+			'--pt-typo-deb-subtitulo' => 'typo_deb_subtitulo',
+			'--pt-typo-deb-nome'      => 'typo_deb_nome',
+			'--pt-typo-deb-empresa'   => 'typo_deb_empresa',
+		) );
 		$cols     = intval( $atts['colunas'] );
 
 		ob_start();
