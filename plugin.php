@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.4.0
+ * Version:     1.5.0
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.4.0' );
+define( 'PT_EVENT_VERSION', '1.5.0' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -38,6 +38,7 @@ require_once PT_EVENT_PLUGIN_DIR . 'includes/post-types/class-patrocinador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-meta-boxes-patrocinador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-taxonomy-cota.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-importador.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-editor.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-admin-filters.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-seeder.php';
 
@@ -98,6 +99,7 @@ final class Plugin {
 		Admin\Meta_Boxes_Patrocinador::get_instance();
 		Admin\Taxonomy_Cota::get_instance();
 		Admin\Importador::get_instance();
+		Admin\Editor::get_instance();
 		Admin\Admin_Filters::get_instance();
 		Admin\Seeder::get_instance();
 	}

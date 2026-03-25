@@ -71,6 +71,8 @@ class Importador {
 
 				<div id="pt-import-preview"></div>
 
+				<button type="button" id="pt-btn-add-sessao" class="pt-btn-add-sessao">+ Adicionar Sessao</button>
+
 				<p style="margin-top: 20px;">
 					<button type="button" id="pt-import-voltar" class="button">Voltar</button>
 					<button type="button" id="pt-import-confirmar" class="button button-primary button-hero">Importar Tudo</button>
@@ -135,6 +137,20 @@ class Importador {
 			.pt-sessao-action select { background: rgba(255,255,255,0.9); border: none; padding: 3px 6px; border-radius: 3px; font-size: 12px; font-weight: 600; }
 			.pt-part-db-info { width: 100%; padding: 4px 0 0 58px; }
 			.pt-part-db-info span { font-size: 11px; color: #92400e; background: #fef9e7; padding: 2px 8px; border-radius: 3px; display: inline-block; }
+			.pt-btn-remove-sessao { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 8px; }
+			.pt-btn-remove-sessao:hover { background: #d63638; border-color: #d63638; }
+			.pt-btn-remove-part { background: #f0f0f1; border: 1px solid #c3c4c7; color: #d63638; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; flex-shrink: 0; }
+			.pt-btn-remove-part:hover { background: #d63638; color: #fff; border-color: #d63638; }
+			.pt-btn-add-part { background: #f0f6fc; border: 1px dashed #2271b1; color: #2271b1; padding: 6px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: 600; margin-top: 8px; display: inline-block; }
+			.pt-btn-add-part:hover { background: #2271b1; color: #fff; }
+			.pt-btn-add-sessao { background: #f0f6fc; border: 2px dashed #2271b1; color: #2271b1; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; display: block; width: 100%; margin-top: 16px; text-align: center; }
+			.pt-btn-add-sessao:hover { background: #2271b1; color: #fff; }
+			.pt-btn-move { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 0 6px; border-radius: 3px; cursor: pointer; font-size: 14px; line-height: 22px; }
+			.pt-btn-move:hover { background: rgba(255,255,255,0.35); }
+			.pt-btn-move-part { background: #f0f0f1; border: 1px solid #c3c4c7; color: #50575e; padding: 0 5px; border-radius: 3px; cursor: pointer; font-size: 12px; line-height: 20px; flex-shrink: 0; }
+			.pt-btn-move-part:hover { background: #2271b1; color: #fff; border-color: #2271b1; }
+			.pt-move-group { display: flex; gap: 2px; margin-left: 4px; }
+			.pt-move-group-part { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
 		</style>
 
 		<script>
@@ -189,9 +205,8 @@ class Importador {
 						html += ' <span class="pt-dup-badge pt-dup-novo">Novo</span>';
 					}
 					html += '</span>';
-					if (s.participantes && s.participantes.length) {
-						html += '<span class="pt-sessao-badge">' + s.participantes.length + ' participante(s)</span>';
-					}
+					var partCount = (s.participantes && s.participantes.length) ? s.participantes.length : 0;
+					html += '<span class="pt-sessao-badge">' + partCount + ' participante(s)</span>';
 					if (s.dup_status === 'existe_db') {
 						html += '<div class="pt-sessao-action"><select class="pt-s-dup-action">';
 						html += '<option value="pular" selected>Pular</option>';
@@ -201,6 +216,11 @@ class Importador {
 					} else {
 						html += '<input type="hidden" class="pt-s-dup-action" value="criar" />';
 					}
+					html += '<div class="pt-move-group">';
+					html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-up" title="Mover para cima">&#9650;</button>';
+					html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-down" title="Mover para baixo">&#9660;</button>';
+					html += '</div>';
+					html += '<button type="button" class="pt-btn-remove-sessao" title="Remover sessao">&times;</button>';
 					html += '</div>';
 
 					// Campos editaveis da sessao
@@ -218,15 +238,16 @@ class Importador {
 						html += '<div class="pt-sessao-desc"><label style="font-size:12px;font-weight:600;color:#50575e;display:block;margin-bottom:3px;">Descricao</label><textarea class="pt-s-desc"></textarea></div>';
 					}
 
-					// Participantes
+					// Participantes (sempre mostrar secao)
+					html += '<div class="pt-participantes-section">';
+					html += '<h4>Participantes</h4>';
 					if (s.participantes && s.participantes.length) {
-						html += '<div class="pt-participantes-section">';
-						html += '<h4>Participantes</h4>';
 						$.each(s.participantes, function(pi, p) {
 							html += renderParticipanteRow(si, pi, p);
 						});
-						html += '</div>';
 					}
+					html += '<button type="button" class="pt-btn-add-part">+ Adicionar Participante</button>';
+					html += '</div>';
 
 					html += '</div>';
 				});
@@ -309,6 +330,11 @@ class Importador {
 					h += '<input type="hidden" class="pt-p-dup-action" value="criar" />';
 				}
 
+				h += '<div class="pt-move-group-part">';
+				h += '<button type="button" class="pt-btn-move-part pt-btn-move-part-up" title="Mover para cima">&#9650;</button>';
+				h += '<button type="button" class="pt-btn-move-part pt-btn-move-part-down" title="Mover para baixo">&#9660;</button>';
+				h += '</div>';
+				h += '<button type="button" class="pt-btn-remove-part" title="Remover participante">&times;</button>';
 				h += '</div>';
 
 				// Info do banco se existir
@@ -398,6 +424,98 @@ class Importador {
 				$('#pt-import-preview').html('');
 				$('#pt-import-step-3').slideUp(200);
 				$('#pt-import-step-1').slideDown(200);
+			});
+
+			// Remover sessao
+			$('#pt-import-preview').on('click', '.pt-btn-remove-sessao', function() {
+				if (confirm('Remover esta sessao?')) {
+					$(this).closest('.pt-sessao-block').slideUp(200, function() { $(this).remove(); });
+				}
+			});
+
+			// Remover participante
+			$('#pt-import-preview').on('click', '.pt-btn-remove-part', function() {
+				var $row = $(this).closest('.pt-participante-row');
+				var $dbInfo = $row.next('.pt-part-db-info');
+				$row.slideUp(200, function() { $(this).remove(); });
+				if ($dbInfo.length) $dbInfo.slideUp(200, function() { $(this).remove(); });
+			});
+
+			// Adicionar participante
+			$('#pt-import-preview').on('click', '.pt-btn-add-part', function() {
+				var si = $(this).closest('.pt-sessao-block').data('idx') || 0;
+				var pi = $(this).closest('.pt-participantes-section').find('.pt-participante-row').length;
+				var newRow = renderParticipanteRow(si, pi, {
+					nome: '', cargo: '', confirmado: 'nao', papel: '', dup_status: 'novo'
+				});
+				$(newRow).hide().insertBefore($(this)).slideDown(200);
+			});
+
+			// Mover sessao para cima
+			$('#pt-import-preview').on('click', '.pt-btn-move-sessao-up', function() {
+				var $block = $(this).closest('.pt-sessao-block');
+				var $prev = $block.prev('.pt-sessao-block');
+				if ($prev.length) {
+					$block.css('transition','transform 0.15s').css('transform','translateY(-8px)');
+					setTimeout(function(){ $block.insertBefore($prev).css('transform',''); }, 150);
+				}
+			});
+
+			// Mover sessao para baixo
+			$('#pt-import-preview').on('click', '.pt-btn-move-sessao-down', function() {
+				var $block = $(this).closest('.pt-sessao-block');
+				var $next = $block.next('.pt-sessao-block');
+				if ($next.length) {
+					$block.css('transition','transform 0.15s').css('transform','translateY(8px)');
+					setTimeout(function(){ $block.insertAfter($next).css('transform',''); }, 150);
+				}
+			});
+
+			// Mover participante para cima
+			$('#pt-import-preview').on('click', '.pt-btn-move-part-up', function() {
+				var $row = $(this).closest('.pt-participante-row');
+				var $prev = $row.prev('.pt-participante-row');
+				if ($prev.length) $row.insertBefore($prev);
+			});
+
+			// Mover participante para baixo
+			$('#pt-import-preview').on('click', '.pt-btn-move-part-down', function() {
+				var $row = $(this).closest('.pt-participante-row');
+				var $next = $row.next('.pt-participante-row');
+				if ($next.length) $row.insertAfter($next);
+			});
+
+			// Adicionar sessao
+			$('#pt-btn-add-sessao').on('click', function() {
+				var idx = $('#pt-import-preview .pt-sessao-block').length;
+				var today = new Date().toISOString().slice(0, 10);
+				var html = '<div class="pt-sessao-block" data-idx="' + idx + '">';
+				html += '<div class="pt-sessao-header">';
+				html += '<span>Nova sessao <span class="pt-dup-badge pt-dup-novo">Manual</span></span>';
+				html += '<input type="hidden" class="pt-s-dup-action" value="criar" />';
+				html += '<div class="pt-move-group">';
+				html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-up" title="Mover para cima">&#9650;</button>';
+				html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-down" title="Mover para baixo">&#9660;</button>';
+				html += '</div>';
+				html += '<button type="button" class="pt-btn-remove-sessao" title="Remover sessao">&times;</button>';
+				html += '</div>';
+				html += '<div class="pt-sessao-fields">';
+				html += '<div><label>Dia</label><input type="date" class="pt-s-dia" value="' + today + '" /></div>';
+				html += '<div><label>Inicio</label><input type="time" class="pt-s-inicio" value="09:00" /></div>';
+				html += '<div><label>Fim</label><input type="time" class="pt-s-fim" value="10:00" /></div>';
+				html += '<div class="pt-field-titulo"><label>Titulo</label><input type="text" class="pt-s-titulo" value="" placeholder="Titulo da sessao" /></div>';
+				html += '<div><label>Ordem</label><input type="number" class="pt-s-ordem" value="' + idx + '" style="width:55px" /></div>';
+				html += '</div>';
+				html += '<div class="pt-sessao-desc"><label style="font-size:12px;font-weight:600;color:#50575e;display:block;margin-bottom:3px;">Descricao</label><textarea class="pt-s-desc"></textarea></div>';
+				html += '<div class="pt-participantes-section">';
+				html += '<h4>Participantes</h4>';
+				html += '<button type="button" class="pt-btn-add-part">+ Adicionar Participante</button>';
+				html += '</div>';
+				html += '</div>';
+				var $el = $(html).hide();
+				$('#pt-import-preview').append($el);
+				$el.slideDown(200);
+				$el.find('.pt-s-titulo').focus();
 			});
 
 			function esc(s) { return $('<div>').text(s || '').html(); }
