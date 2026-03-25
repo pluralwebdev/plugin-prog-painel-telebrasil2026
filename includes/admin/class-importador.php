@@ -21,6 +21,7 @@ class Importador {
 	private function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'wp_ajax_pt_event_parse_programacao', array( $this, 'ajax_parse' ) );
+		add_action( 'wp_ajax_pt_event_parse_ia', array( $this, 'ajax_parse_ia' ) );
 		add_action( 'wp_ajax_pt_event_importar_programacao', array( $this, 'ajax_importar' ) );
 	}
 
@@ -59,8 +60,20 @@ class Importador {
 					<label><input type="checkbox" id="pt-import-limpar-participantes" value="1" /> Limpar todos os participantes existentes antes de importar</label>
 				</p>
 
-				<p style="margin-top: 16px;">
-					<button type="button" id="pt-import-processar" class="button button-primary button-hero">Processar</button>
+				<p style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
+					<?php
+					$groq = new \PTEvent\Helpers\Groq_Client();
+					if ( $groq->is_configured() ) :
+					?>
+					<button type="button" id="pt-import-processar-ia" class="button button-primary button-hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; text-shadow: none;">
+						&#129302; Processar com IA
+					</button>
+					<span id="pt-ia-status" style="font-size: 13px; color: #666;"></span>
+					<?php else : ?>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=pt-event-settings&tab=ia' ) ); ?>" class="button button-hero" style="opacity: 0.8;">
+						&#129302; Configurar IA para importar
+					</a>
+					<?php endif; ?>
 				</p>
 			</div>
 
@@ -157,6 +170,43 @@ class Importador {
 		(function($) {
 			var parsedData = [];
 			var nonce = '<?php echo $nonce; ?>';
+
+			// STEP 1a: Processar com IA
+			$('#pt-import-processar-ia').on('click', function() {
+				var texto = $('#pt-import-texto').val().trim();
+				if (!texto) { alert('Cole o texto da programacao.'); return; }
+				var $btn = $(this).prop('disabled', true);
+				var originalText = $btn.html();
+				$btn.html('&#129302; Analisando com IA...');
+				$('#pt-ia-status').text('Enviando para Groq... aguarde.');
+
+				$.post(ajaxurl, {
+					action: 'pt_event_parse_ia',
+					nonce: nonce,
+					texto: texto
+				}, function(res) {
+					$btn.prop('disabled', false).html(originalText);
+					$('#pt-ia-status').text('');
+					if (res.success && res.data.length) {
+						parsedData = res.data;
+						renderPreview(res.data);
+						$('#pt-import-step-1').slideUp(200);
+						$('#pt-import-step-2').slideDown(200);
+					} else {
+						var errMsg = (res.data && res.data.message) ? res.data.message : 'Nenhuma sessao encontrada pela IA.';
+						alert(errMsg);
+					}
+				}).fail(function(xhr) {
+					$btn.prop('disabled', false).html(originalText);
+					$('#pt-ia-status').text('');
+					var errMsg = 'Erro ao processar com IA.';
+					try {
+						var resp = JSON.parse(xhr.responseText);
+						if (resp.data && resp.data.message) errMsg = resp.data.message;
+					} catch(e) {}
+					alert(errMsg);
+				});
+			});
 
 			// STEP 1: Processar
 			$('#pt-import-processar').on('click', function() {
@@ -529,6 +579,37 @@ class Importador {
 	// =========================================================================
 	// AJAX: Parse
 	// =========================================================================
+
+	public function ajax_parse_ia() {
+		check_ajax_referer( 'pt_event_importar', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Sem permissao.' ) );
+		}
+
+		$texto = isset( $_POST['texto'] ) ? wp_unslash( $_POST['texto'] ) : '';
+		if ( empty( trim( $texto ) ) ) {
+			wp_send_json_error( array( 'message' => 'Texto vazio.' ) );
+		}
+
+		$groq = new \PTEvent\Helpers\Groq_Client();
+		if ( ! $groq->is_configured() ) {
+			wp_send_json_error( array( 'message' => 'Chave de API do Groq nao configurada. Acesse Config. Evento > IA / API.' ) );
+		}
+
+		$result = $groq->parse_programacao( $texto );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		}
+
+		if ( empty( $result ) ) {
+			wp_send_json_error( array( 'message' => 'A IA nao encontrou sessoes no texto.' ) );
+		}
+
+		// Enrich with duplicate detection (same as regular parse)
+		$result = $this->enrich_with_duplicates( $result );
+		wp_send_json_success( $result );
+	}
 
 	public function ajax_parse() {
 		check_ajax_referer( 'pt_event_importar', 'nonce' );

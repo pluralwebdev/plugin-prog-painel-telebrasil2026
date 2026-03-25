@@ -27,6 +27,7 @@ class Settings {
 			'programacao'    => __( 'Programação', 'pt-event' ),
 			'participantes'  => __( 'Participantes', 'pt-event' ),
 			'patrocinadores' => __( 'Patrocinadores', 'pt-event' ),
+			'ia'             => __( 'IA / API', 'pt-event' ),
 			'ferramentas'    => __( 'Ferramentas', 'pt-event' ),
 		);
 
@@ -58,6 +59,45 @@ class Settings {
 		$this->register_tab_programacao();
 		$this->register_tab_participantes();
 		$this->register_tab_patrocinadores();
+		$this->register_tab_ia();
+	}
+
+	/* ======================================================================
+	   TAB: IA / API
+	   ====================================================================== */
+	private function register_tab_ia() {
+		$page = 'pt-event-tab-ia';
+
+		add_settings_section( 'pt_event_ia_groq', __( '🤖 Groq — Parser Inteligente', 'pt-event' ),
+			function () {
+				echo '<p class="description">' . esc_html__( 'O Groq é usado como parser inteligente no importador. Ele interpreta textos de programação em qualquer formato e extrai sessões, horários e participantes automaticamente.', 'pt-event' ) . '</p>';
+				echo '<p class="description">' . wp_kses(
+					sprintf( __( 'Obtenha sua chave de API gratuita em %s.', 'pt-event' ), '<a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>' ),
+					array( 'a' => array( 'href' => array(), 'target' => array() ) )
+				) . '</p>';
+			},
+			$page
+		);
+
+		add_settings_field( 'groq_api_key', __( 'Chave de API (Groq)', 'pt-event' ),
+			array( $this, 'render_api_key_field' ), $page, 'pt_event_ia_groq',
+			array( 'key' => 'groq_api_key' )
+		);
+
+		add_settings_field( 'groq_model', __( 'Modelo', 'pt-event' ),
+			array( $this, 'render_groq_model_field' ), $page, 'pt_event_ia_groq'
+		);
+
+		add_settings_section( 'pt_event_ia_prompt', __( '📝 Prompt do Parser', 'pt-event' ),
+			function () {
+				echo '<p class="description">' . esc_html__( 'Este é o prompt (instrução) enviado à IA para interpretar o texto da programação. Edite para ensinar a IA a reconhecer novos padrões de dados.', 'pt-event' ) . '</p>';
+			},
+			$page
+		);
+
+		add_settings_field( 'groq_system_prompt', __( 'System Prompt', 'pt-event' ),
+			array( $this, 'render_groq_prompt_field' ), $page, 'pt_event_ia_prompt'
+		);
 	}
 
 	/* ======================================================================
@@ -415,6 +455,61 @@ class Settings {
 		);
 	}
 
+	public function render_api_key_field( $args ) {
+		$key      = $args['key'];
+		$settings = \PTEvent\Helpers\Helpers::get_settings();
+		$value    = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
+
+		// Mask the key for display
+		$display = '';
+		if ( ! empty( $value ) ) {
+			$display = substr( $value, 0, 8 ) . str_repeat( '*', max( 0, strlen( $value ) - 12 ) ) . substr( $value, -4 );
+		}
+		?>
+		<input type="text" name="pt_event_settings[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $display ); ?>" class="regular-text" placeholder="gsk_..." style="font-family: monospace;" autocomplete="off" />
+		<?php if ( ! empty( $value ) ) : ?>
+			<span style="color: #00a32a; font-weight: 600; margin-left: 8px;">✓ Configurada</span>
+		<?php endif; ?>
+		<p class="description"><?php esc_html_e( 'Cole a chave completa para atualizar. O valor é mascarado por segurança.', 'pt-event' ); ?></p>
+		<?php
+	}
+
+	public function render_groq_prompt_field() {
+		$settings = \PTEvent\Helpers\Helpers::get_settings();
+		$default  = \PTEvent\Helpers\Groq_Client::get_default_prompt();
+		$value    = isset( $settings['groq_system_prompt'] ) && ! empty( $settings['groq_system_prompt'] ) ? $settings['groq_system_prompt'] : $default;
+		?>
+		<textarea name="pt_event_settings[groq_system_prompt]" rows="20" class="large-text code" style="font-family: monospace; font-size: 12px;"><?php echo esc_textarea( $value ); ?></textarea>
+		<p class="description">
+			<?php esc_html_e( 'Edite o prompt para ensinar a IA a reconhecer novos formatos. O texto da programação será enviado logo após este prompt.', 'pt-event' ); ?>
+		</p>
+		<p style="margin-top: 8px;">
+			<button type="button" class="button" id="pt-reset-prompt" onclick="if(confirm('Restaurar o prompt padrão? Suas alterações serão perdidas.')) { document.querySelector('textarea[name=\'pt_event_settings[groq_system_prompt]\']').value = <?php echo esc_attr( wp_json_encode( $default ) ); ?>; }">
+				<?php esc_html_e( '↩ Restaurar prompt padrão', 'pt-event' ); ?>
+			</button>
+		</p>
+		<?php
+	}
+
+	public function render_groq_model_field() {
+		$settings = \PTEvent\Helpers\Helpers::get_settings();
+		$model    = isset( $settings['groq_model'] ) ? $settings['groq_model'] : 'llama-3.3-70b-versatile';
+		$models   = array(
+			'llama-3.3-70b-versatile'  => 'Llama 3.3 70B (recomendado)',
+			'llama-3.1-8b-instant'     => 'Llama 3.1 8B (mais rápido)',
+			'mixtral-8x7b-32768'       => 'Mixtral 8x7B',
+			'gemma2-9b-it'             => 'Gemma 2 9B',
+		);
+		?>
+		<select name="pt_event_settings[groq_model]">
+			<?php foreach ( $models as $val => $label ) : ?>
+				<option value="<?php echo esc_attr( $val ); ?>" <?php selected( $model, $val ); ?>><?php echo esc_html( $label ); ?></option>
+			<?php endforeach; ?>
+		</select>
+		<p class="description"><?php esc_html_e( 'Modelo usado para interpretar o texto da programação.', 'pt-event' ); ?></p>
+		<?php
+	}
+
 	public function render_typography_group( $args ) {
 		$prefix   = $args['prefix'];
 		$settings = \PTEvent\Helpers\Helpers::get_settings();
@@ -556,6 +651,23 @@ class Settings {
 		}
 		if ( isset( $input['typo_prog_titulo_prefixo_color'] ) ) {
 			$sanitized['typo_prog_titulo_prefixo_color'] = sanitize_hex_color( $input['typo_prog_titulo_prefixo_color'] );
+		}
+
+		// IA / API keys
+		if ( isset( $input['groq_api_key'] ) ) {
+			$key = sanitize_text_field( $input['groq_api_key'] );
+			// If masked (starts with gsk_…****), keep existing value
+			if ( strpos( $key, '****' ) !== false && ! empty( $sanitized['groq_api_key'] ) ) {
+				// keep existing
+			} else {
+				$sanitized['groq_api_key'] = $key;
+			}
+		}
+		if ( isset( $input['groq_model'] ) ) {
+			$sanitized['groq_model'] = sanitize_text_field( $input['groq_model'] );
+		}
+		if ( isset( $input['groq_system_prompt'] ) ) {
+			$sanitized['groq_system_prompt'] = wp_kses_post( $input['groq_system_prompt'] );
 		}
 
 		// Typography fields
