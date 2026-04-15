@@ -348,7 +348,8 @@
 		current = index;
 		if (bullets.length > current) bullets[current].classList.add('active');
 
-		slidesContainer.style.transform = 'translateX(-' + (current * 100) + '%)';
+		var slideWidth = slidesContainer.parentElement.offsetWidth;
+		slidesContainer.style.transform = 'translateX(-' + (current * slideWidth) + 'px)';
 	}
 
 	function startAuto() {
