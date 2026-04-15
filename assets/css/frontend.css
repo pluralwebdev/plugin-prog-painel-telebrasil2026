@@ -869,6 +869,7 @@
 
 .pt-home-slides-wrapper {
 	overflow: hidden;
+	clip-path: inset(0);
 	position: relative;
 	width: 100%;
 }
