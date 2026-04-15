@@ -1080,6 +1080,8 @@ a.pt-pat-card:visited {
 	border-radius: var(--pt-pat-card-radius, 10px) !important;
 	box-shadow: var(--pt-pat-card-shadow, 0 0 15px rgba(0, 0, 0, 0.30)) !important;
 	overflow: hidden;
+	padding: var(--pt-pat-card-padding, 10px);
+	box-sizing: border-box;
 	text-decoration: none !important;
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

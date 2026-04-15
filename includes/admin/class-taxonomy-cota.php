@@ -56,6 +56,11 @@ class Taxonomy_Cota {
 			<p class="description"><?php esc_html_e( 'Percentual do card que a logo ocupa (largura e altura máximas).', 'pt-event' ); ?></p>
 		</div>
 		<div class="form-field">
+			<label><?php esc_html_e( 'Padding interno do card (px)', 'pt-event' ); ?></label>
+			<input type="number" name="_pt_cota_padding" id="_pt_cota_padding" value="10" min="0" max="60" />
+			<p class="description"><?php esc_html_e( 'Espaço interno entre a borda do card e o logo. Evita logos colados nas bordas.', 'pt-event' ); ?></p>
+		</div>
+		<div class="form-field">
 			<label><?php esc_html_e( 'Ordem de exibição', 'pt-event' ); ?></label>
 			<input type="number" name="_pt_cota_order" value="1" min="0" max="100" />
 			<p class="description"><?php esc_html_e( 'Ordem da seção no shortcode (1 = primeiro).', 'pt-event' ); ?></p>
@@ -71,6 +76,8 @@ class Taxonomy_Cota {
 		$height   = get_term_meta( $term->term_id, '_pt_cota_height', true ) ?: 88;
 		$cols     = get_term_meta( $term->term_id, '_pt_cota_cols', true ) ?: 6;
 		$logo_pct = get_term_meta( $term->term_id, '_pt_cota_logo_pct', true ) ?: 55;
+		$padding  = get_term_meta( $term->term_id, '_pt_cota_padding', true );
+		$padding  = ( '' !== $padding ) ? absint( $padding ) : 10;
 		$order    = get_term_meta( $term->term_id, '_pt_cota_order', true ) ?: 1;
 		?>
 		<tr class="form-field">
@@ -102,6 +109,13 @@ class Taxonomy_Cota {
 			</td>
 		</tr>
 		<tr class="form-field">
+			<th><label><?php esc_html_e( 'Padding interno do card (px)', 'pt-event' ); ?></label></th>
+			<td>
+				<input type="number" name="_pt_cota_padding" value="<?php echo esc_attr( $padding ); ?>" min="0" max="60" />
+				<p class="description"><?php esc_html_e( 'Espaço interno entre a borda do card e o logo. Evita logos colados nas bordas.', 'pt-event' ); ?></p>
+			</td>
+		</tr>
+		<tr class="form-field">
 			<th><label><?php esc_html_e( 'Ordem de exibição', 'pt-event' ); ?></label></th>
 			<td>
 				<input type="number" name="_pt_cota_order" value="<?php echo esc_attr( $order ); ?>" min="0" max="100" />
@@ -115,7 +129,7 @@ class Taxonomy_Cota {
 	 * Save term meta.
 	 */
 	public function save_fields( $term_id ) {
-		$fields = array( '_pt_cota_width', '_pt_cota_height', '_pt_cota_cols', '_pt_cota_logo_pct', '_pt_cota_order' );
+		$fields = array( '_pt_cota_width', '_pt_cota_height', '_pt_cota_cols', '_pt_cota_logo_pct', '_pt_cota_padding', '_pt_cota_order' );
 		foreach ( $fields as $field ) {
 			if ( isset( $_POST[ $field ] ) ) {
 				update_term_meta( $term_id, $field, absint( $_POST[ $field ] ) );

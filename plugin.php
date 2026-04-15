@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.6.0
+ * Version:     1.6.1
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.6.0' );
+define( 'PT_EVENT_VERSION', '1.6.1' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -39,6 +39,8 @@ require_once PT_EVENT_PLUGIN_DIR . 'includes/post-types/class-patrocinador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-meta-boxes-patrocinador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-taxonomy-cota.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-importador.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-importador-participantes.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-ordenar-participantes.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-editor.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-admin-filters.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-seeder.php';
@@ -100,6 +102,8 @@ final class Plugin {
 		Admin\Meta_Boxes_Patrocinador::get_instance();
 		Admin\Taxonomy_Cota::get_instance();
 		Admin\Importador::get_instance();
+		Admin\Importador_Participantes::get_instance();
+		Admin\Ordenar_Participantes::get_instance();
 		Admin\Editor::get_instance();
 		Admin\Admin_Filters::get_instance();
 		Admin\Seeder::get_instance();
@@ -112,7 +116,11 @@ final class Plugin {
 		}
 
 		$allowed = array( 'pt_sessao', 'pt_participante', 'pt_patrocinador' );
-		$is_settings = ( 'toplevel_page_pt-event-settings' === $hook );
+		$is_settings   = ( 'toplevel_page_pt-event-settings' === $hook );
+		$is_editor     = ( false !== strpos( $hook, 'pt-event-editor' ) );
+		$is_importador = ( false !== strpos( $hook, 'pt-event-importar' ) );
+		$is_ordenar    = ( false !== strpos( $hook, 'pt-event-ordenar-participantes' ) );
+
 		if ( in_array( $screen->post_type, $allowed, true ) || $is_settings ) {
 			if ( $is_settings || in_array( $screen->post_type, array( 'pt_participante', 'pt_patrocinador' ), true ) ) {
 				wp_enqueue_media();
@@ -133,6 +141,38 @@ final class Plugin {
 			wp_localize_script( 'pt-event-admin', 'ptEventAdmin', array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'pt_event_admin' ),
+			) );
+		}
+
+		// Editor e Importador: SortableJS + assets extras
+		if ( $is_editor || $is_importador || $is_ordenar ) {
+			wp_enqueue_media();
+			wp_enqueue_style(
+				'pt-event-admin',
+				PT_EVENT_PLUGIN_URL . 'assets/css/admin.css',
+				array(),
+				PT_EVENT_VERSION
+			);
+			wp_enqueue_script(
+				'pt-event-sortable',
+				PT_EVENT_PLUGIN_URL . 'assets/js/sortable.min.js',
+				array(),
+				'1.15.6',
+				true
+			);
+		}
+
+		if ( $is_editor ) {
+			wp_enqueue_style(
+				'pt-event-frontend-admin',
+				PT_EVENT_PLUGIN_URL . 'assets/css/frontend.css',
+				array(),
+				PT_EVENT_VERSION
+			);
+			wp_localize_script( 'pt-event-sortable', 'ptEditorData', array(
+				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'pt_event_editor' ),
+				'settings' => Helpers\Helpers::get_settings(),
 			) );
 		}
 	}

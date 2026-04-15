@@ -138,3 +138,16 @@
 	background: #f0f6fc;
 	border: 2px dashed #2271b1;
 }
+
+/* ==========================================================================
+   Editor / Importador — SortableJS drag feedback
+   ========================================================================== */
+
+/* Frontend CSS enqueued in admin for editor preview — scoped, no leakage */
+/* Ensure .pt-programacao inside preview frame uses correct box model */
+.pt-editor-preview-frame * { box-sizing: border-box; }
+
+/* Day-selector active badge in preview (pointer-events:none so click-through) */
+.pt-editor-preview-frame .pt-day-badge { pointer-events: all; cursor: pointer; }
+.pt-editor-preview-frame .pt-day-content { display: none; }
+.pt-editor-preview-frame .pt-day-content.active { display: block; }

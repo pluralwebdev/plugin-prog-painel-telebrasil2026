@@ -158,12 +158,13 @@ class Importador {
 			.pt-btn-add-part:hover { background: #2271b1; color: #fff; }
 			.pt-btn-add-sessao { background: #f0f6fc; border: 2px dashed #2271b1; color: #2271b1; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; display: block; width: 100%; margin-top: 16px; text-align: center; }
 			.pt-btn-add-sessao:hover { background: #2271b1; color: #fff; }
-			.pt-btn-move { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 0 6px; border-radius: 3px; cursor: pointer; font-size: 14px; line-height: 22px; }
-			.pt-btn-move:hover { background: rgba(255,255,255,0.35); }
-			.pt-btn-move-part { background: #f0f0f1; border: 1px solid #c3c4c7; color: #50575e; padding: 0 5px; border-radius: 3px; cursor: pointer; font-size: 12px; line-height: 20px; flex-shrink: 0; }
-			.pt-btn-move-part:hover { background: #2271b1; color: #fff; border-color: #2271b1; }
-			.pt-move-group { display: flex; gap: 2px; margin-left: 4px; }
-			.pt-move-group-part { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
+			.pt-drag-handle-sessao { cursor: grab; padding: 0 10px 0 2px; font-size: 18px; color: rgba(255,255,255,0.65); user-select: none; flex-shrink: 0; line-height: 1; letter-spacing: -1px; }
+			.pt-drag-handle-sessao:active { cursor: grabbing; }
+			.pt-drag-handle-part { cursor: grab; padding: 0 6px; font-size: 14px; color: #bbb; user-select: none; flex-shrink: 0; line-height: 1; letter-spacing: -1px; }
+			.pt-drag-handle-part:active { cursor: grabbing; }
+			.pt-sortable-ghost { opacity: 0.35 !important; background: #c8ebfb !important; }
+			.pt-sortable-ghost.pt-participante-row { background: #e8f0fe !important; border: 2px dashed #2271b1 !important; }
+			.pt-sortable-chosen.pt-sessao-block { box-shadow: 0 4px 24px rgba(0,0,0,0.2); }
 		</style>
 
 		<script>
@@ -248,6 +249,7 @@ class Importador {
 					html += '<div class="pt-sessao-block" data-idx="' + si + '">';
 					var headerClass = 'pt-sessao-header' + (s.dup_status === 'existe_db' ? ' pt-sessao-existe' : '');
 					html += '<div class="' + headerClass + '">';
+					html += '<span class="pt-drag-handle-sessao" title="Arrastar para reordenar">&#10783;</span>';
 					html += '<span>' + esc(s.hora_inicio) + ' - ' + esc(s.hora_fim) + ' | ' + esc(s.titulo);
 					if (s.dup_status === 'existe_db') {
 						html += ' <span class="pt-dup-badge pt-dup-existe">Ja existe no banco (ID ' + s.dup_existing_id + ')</span>';
@@ -266,10 +268,6 @@ class Importador {
 					} else {
 						html += '<input type="hidden" class="pt-s-dup-action" value="criar" />';
 					}
-					html += '<div class="pt-move-group">';
-					html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-up" title="Mover para cima">&#9650;</button>';
-					html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-down" title="Mover para baixo">&#9660;</button>';
-					html += '</div>';
 					html += '<button type="button" class="pt-btn-remove-sessao" title="Remover sessao">&times;</button>';
 					html += '</div>';
 
@@ -303,6 +301,7 @@ class Importador {
 				});
 
 				$('#pt-import-preview').html(html);
+				initImportSortables();
 
 				// Bind foto upload
 				$('#pt-import-preview').on('click', '.pt-part-foto', function() {
@@ -331,6 +330,7 @@ class Importador {
 			function renderParticipanteRow(si, pi, p) {
 				var statusClass = p.confirmado === 'sim' ? 'pt-status-confirmado' : (p.confirmado === 'cancelado' ? 'pt-status-cancelado' : '');
 				var h = '<div class="pt-participante-row">';
+				h += '<span class="pt-drag-handle-part" title="Arrastar para reordenar">&#10783;</span>';
 
 				// Foto - se ja existe no banco, mostrar a foto existente
 				h += '<div class="pt-part-foto" title="Clique para adicionar foto">';
@@ -380,10 +380,6 @@ class Importador {
 					h += '<input type="hidden" class="pt-p-dup-action" value="criar" />';
 				}
 
-				h += '<div class="pt-move-group-part">';
-				h += '<button type="button" class="pt-btn-move-part pt-btn-move-part-up" title="Mover para cima">&#9650;</button>';
-				h += '<button type="button" class="pt-btn-move-part pt-btn-move-part-down" title="Mover para baixo">&#9660;</button>';
-				h += '</div>';
 				h += '<button type="button" class="pt-btn-remove-part" title="Remover participante">&times;</button>';
 				h += '</div>';
 
@@ -493,64 +489,32 @@ class Importador {
 
 			// Adicionar participante
 			$('#pt-import-preview').on('click', '.pt-btn-add-part', function() {
-				var si = $(this).closest('.pt-sessao-block').data('idx') || 0;
+				var $block = $(this).closest('.pt-sessao-block');
+				var si = $('#pt-import-preview .pt-sessao-block').index($block);
 				var pi = $(this).closest('.pt-participantes-section').find('.pt-participante-row').length;
 				var newRow = renderParticipanteRow(si, pi, {
 					nome: '', cargo: '', confirmado: 'nao', papel: '', dup_status: 'novo'
 				});
-				$(newRow).hide().insertBefore($(this)).slideDown(200);
-			});
-
-			// Mover sessao para cima
-			$('#pt-import-preview').on('click', '.pt-btn-move-sessao-up', function() {
-				var $block = $(this).closest('.pt-sessao-block');
-				var $prev = $block.prev('.pt-sessao-block');
-				if ($prev.length) {
-					$block.css('transition','transform 0.15s').css('transform','translateY(-8px)');
-					setTimeout(function(){ $block.insertBefore($prev).css('transform',''); }, 150);
-				}
-			});
-
-			// Mover sessao para baixo
-			$('#pt-import-preview').on('click', '.pt-btn-move-sessao-down', function() {
-				var $block = $(this).closest('.pt-sessao-block');
-				var $next = $block.next('.pt-sessao-block');
-				if ($next.length) {
-					$block.css('transition','transform 0.15s').css('transform','translateY(8px)');
-					setTimeout(function(){ $block.insertAfter($next).css('transform',''); }, 150);
-				}
-			});
-
-			// Mover participante para cima
-			$('#pt-import-preview').on('click', '.pt-btn-move-part-up', function() {
-				var $row = $(this).closest('.pt-participante-row');
-				var $prev = $row.prev('.pt-participante-row');
-				if ($prev.length) $row.insertBefore($prev);
-			});
-
-			// Mover participante para baixo
-			$('#pt-import-preview').on('click', '.pt-btn-move-part-down', function() {
-				var $row = $(this).closest('.pt-participante-row');
-				var $next = $row.next('.pt-participante-row');
-				if ($next.length) $row.insertAfter($next);
+				var $newRow = $(newRow).hide().insertBefore($(this));
+				$newRow.slideDown(200, function() {
+					var $section = $newRow.closest('.pt-participantes-section')[0];
+					initImportPartSortable($section);
+				});
 			});
 
 			// Adicionar sessao
 			$('#pt-btn-add-sessao').on('click', function() {
 				var idx = $('#pt-import-preview .pt-sessao-block').length;
-				var today = new Date().toISOString().slice(0, 10);
+				var dia = getImportFirstDay();
 				var html = '<div class="pt-sessao-block" data-idx="' + idx + '">';
 				html += '<div class="pt-sessao-header">';
+				html += '<span class="pt-drag-handle-sessao" title="Arrastar para reordenar">&#10783;</span>';
 				html += '<span>Nova sessao <span class="pt-dup-badge pt-dup-novo">Manual</span></span>';
 				html += '<input type="hidden" class="pt-s-dup-action" value="criar" />';
-				html += '<div class="pt-move-group">';
-				html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-up" title="Mover para cima">&#9650;</button>';
-				html += '<button type="button" class="pt-btn-move pt-btn-move-sessao-down" title="Mover para baixo">&#9660;</button>';
-				html += '</div>';
 				html += '<button type="button" class="pt-btn-remove-sessao" title="Remover sessao">&times;</button>';
 				html += '</div>';
 				html += '<div class="pt-sessao-fields">';
-				html += '<div><label>Dia</label><input type="date" class="pt-s-dia" value="' + today + '" /></div>';
+				html += '<div><label>Dia</label><input type="date" class="pt-s-dia" value="' + dia + '" /></div>';
 				html += '<div><label>Inicio</label><input type="time" class="pt-s-inicio" value="09:00" /></div>';
 				html += '<div><label>Fim</label><input type="time" class="pt-s-fim" value="10:00" /></div>';
 				html += '<div class="pt-field-titulo"><label>Titulo</label><input type="text" class="pt-s-titulo" value="" placeholder="Titulo da sessao" /></div>';
@@ -564,9 +528,58 @@ class Importador {
 				html += '</div>';
 				var $el = $(html).hide();
 				$('#pt-import-preview').append($el);
-				$el.slideDown(200);
+				$el.slideDown(200, function() {
+					renumberImportOrdens();
+					initImportPartSortable($el.find('.pt-participantes-section')[0]);
+				});
 				$el.find('.pt-s-titulo').focus();
 			});
+
+			// SortableJS
+			function initImportSortables() {
+				if (typeof Sortable === 'undefined') return;
+				var container = document.getElementById('pt-import-preview');
+				if (!container) return;
+				if (Sortable.get(container)) Sortable.get(container).destroy();
+				new Sortable(container, {
+					handle: '.pt-drag-handle-sessao',
+					draggable: '.pt-sessao-block',
+					filter: '.pt-dia-divider',
+					preventOnFilter: false,
+					animation: 150,
+					ghostClass: 'pt-sortable-ghost',
+					chosenClass: 'pt-sortable-chosen',
+					onEnd: function() { renumberImportOrdens(); }
+				});
+				$('#pt-import-preview .pt-participantes-section').each(function() {
+					initImportPartSortable(this);
+				});
+			}
+
+			function initImportPartSortable(sectionEl) {
+				if (typeof Sortable === 'undefined' || !sectionEl) return;
+				if (Sortable.get(sectionEl)) Sortable.get(sectionEl).destroy();
+				new Sortable(sectionEl, {
+					group: { name: 'import-participantes', pull: true, put: true },
+					handle: '.pt-drag-handle-part',
+					draggable: '.pt-participante-row',
+					filter: '.pt-btn-add-part',
+					preventOnFilter: false,
+					animation: 100,
+					ghostClass: 'pt-sortable-ghost'
+				});
+			}
+
+			function renumberImportOrdens() {
+				$('#pt-import-preview .pt-sessao-block').each(function(i) {
+					$(this).find('.pt-s-ordem').val(i);
+				});
+			}
+
+			function getImportFirstDay() {
+				var d = $('#pt-import-preview .pt-sessao-block').first().find('.pt-s-dia').val();
+				return d || new Date().toISOString().slice(0, 10);
+			}
 
 			function esc(s) { return $('<div>').text(s || '').html(); }
 			function escA(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }

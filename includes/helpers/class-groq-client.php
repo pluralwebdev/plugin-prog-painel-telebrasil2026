@@ -98,6 +98,68 @@ class Groq_Client {
 	}
 
 	/**
+	 * Send a generic request to Groq with a custom system prompt and user text.
+	 *
+	 * @param string $system_prompt The system instruction.
+	 * @param string $user_text     The user-provided content.
+	 * @return array|\WP_Error      Decoded JSON array or WP_Error on failure.
+	 */
+	public function request( $system_prompt, $user_text ) {
+		if ( ! $this->is_configured() ) {
+			return new \WP_Error( 'groq_no_key', 'Chave de API do Groq não configurada. Acesse Config. Evento > IA / API.' );
+		}
+
+		$body = array(
+			'model'       => $this->model,
+			'messages'    => array(
+				array( 'role' => 'system', 'content' => $system_prompt ),
+				array( 'role' => 'user',   'content' => $user_text ),
+			),
+			'temperature' => 0.1,
+			'max_tokens'  => 4000,
+		);
+
+		$response = wp_remote_post( $this->api_url, array(
+			'timeout' => 60,
+			'headers' => array(
+				'Authorization' => 'Bearer ' . $this->api_key,
+				'Content-Type'  => 'application/json',
+			),
+			'body' => wp_json_encode( $body ),
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			return new \WP_Error( 'groq_request_failed', 'Erro na requisição ao Groq: ' . $response->get_error_message() );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$raw  = wp_remote_retrieve_body( $response );
+		$data = json_decode( $raw, true );
+
+		if ( $code !== 200 ) {
+			$msg = isset( $data['error']['message'] ) ? $data['error']['message'] : 'HTTP ' . $code;
+			return new \WP_Error( 'groq_api_error', 'Erro da API Groq: ' . $msg );
+		}
+
+		if ( empty( $data['choices'][0]['message']['content'] ) ) {
+			return new \WP_Error( 'groq_empty', 'Resposta vazia do Groq.' );
+		}
+
+		$content  = $data['choices'][0]['message']['content'];
+		$json_str = $content;
+		if ( preg_match( '/```(?:json)?\s*([\s\S]*?)```/', $content, $m ) ) {
+			$json_str = trim( $m[1] );
+		}
+
+		$parsed = json_decode( $json_str, true );
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			return new \WP_Error( 'groq_json_error', 'JSON inválido: ' . json_last_error_msg() . "\n\nResposta raw:\n" . mb_substr( $content, 0, 500 ) );
+		}
+
+		return $parsed;
+	}
+
+	/**
 	 * Get the default system prompt.
 	 */
 	public static function get_default_prompt() {

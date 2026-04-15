@@ -62,6 +62,8 @@ class Shortcode_Patrocinadores {
 				$height   = absint( get_term_meta( $cota->term_id, '_pt_cota_height', true ) ) ?: 88;
 				$cols     = absint( get_term_meta( $cota->term_id, '_pt_cota_cols', true ) ) ?: 6;
 				$logo_pct = absint( get_term_meta( $cota->term_id, '_pt_cota_logo_pct', true ) ) ?: 55;
+				$pad_raw  = get_term_meta( $cota->term_id, '_pt_cota_padding', true );
+				$padding  = ( '' !== $pad_raw ) ? absint( $pad_raw ) : 10;
 
 				$patrocinadores = get_posts( array(
 					'post_type'      => 'pt_patrocinador',
@@ -86,7 +88,8 @@ class Shortcode_Patrocinadores {
 				$section_style = '--pt-pat-cols:' . $cols . ';'
 					. '--pt-pat-card-w:' . $width . 'px;'
 					. '--pt-pat-card-h:' . $height . 'px;'
-					. '--pt-pat-logo-pct:' . $logo_pct . '%;';
+					. '--pt-pat-logo-pct:' . $logo_pct . '%;'
+					. '--pt-pat-card-padding:' . $padding . 'px;';
 			?>
 				<div class="pt-pat-section" style="<?php echo esc_attr( $section_style ); ?>">
 					<h3 class="pt-pat-section-title"><?php echo esc_html( strtoupper( $cota->name ) ); ?></h3>

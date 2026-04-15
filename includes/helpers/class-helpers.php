@@ -247,6 +247,8 @@ class Helpers {
 			'post_type'      => 'pt_participante',
 			'posts_per_page' => -1,
 			'post_status'    => 'publish',
+			'orderby'        => 'menu_order',
+			'order'          => 'ASC',
 		);
 
 		if ( $tipo ) {
@@ -278,6 +280,8 @@ class Helpers {
 			'post_type'      => 'pt_participante',
 			'posts_per_page' => -1,
 			'post_status'    => 'publish',
+			'orderby'        => 'menu_order',
+			'order'          => 'ASC',
 			'meta_query'     => array(
 				array(
 					'key'   => '_pt_event_exibir_home',
