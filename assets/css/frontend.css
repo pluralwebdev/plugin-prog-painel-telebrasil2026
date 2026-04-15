@@ -1343,3 +1343,148 @@ a.pt-pat-card:hover {
 	font-style: var(--pt-typo-pat-titulo-font-style, normal);
 	text-decoration: var(--pt-typo-pat-titulo-text-decoration, none);
 }
+
+/* ==========================================================================
+   CAROUSEL V2 — [event_palestrantes_v2]
+   Mecanismo: scrollLeft (sem transform, sem GPU compositing layer)
+   ========================================================================== */
+
+.pt-v2-carousel {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 40px 20px;
+}
+
+.pt-v2-header {
+	text-align: center;
+	margin-bottom: 40px;
+}
+
+.pt-v2-title {
+	font-family: "ClashDisplay-Semibold", "Inter", sans-serif;
+	font-size: 36px;
+	font-weight: 700;
+	color: var(--pt-escura, #0A1E3D);
+	margin: 0 0 8px;
+}
+
+.pt-v2-subtitle {
+	font-family: "Inter", sans-serif;
+	font-size: 16px;
+	color: var(--pt-cor-cargo, #6B7280);
+	margin: 0;
+}
+
+/* Track = scroll container nativo — sem transforms, sem GPU layer */
+.pt-v2-track {
+	display: flex;
+	overflow-x: scroll;
+	overflow-y: visible;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	padding-top: 44px;
+	margin-top: -44px;
+}
+
+.pt-v2-track::-webkit-scrollbar {
+	display: none;
+}
+
+.pt-v2-slide {
+	width: 100%;
+	flex-shrink: 0;
+	scroll-snap-align: start;
+}
+
+.pt-v2-grid {
+	display: grid;
+	gap: 40px 20px;
+}
+
+/* Foto "saindo por cima" do chevron — scoped ao v2, não afeta outros shortcodes */
+.pt-v2-carousel .pt-card-foto-wrapper {
+	overflow: visible;
+}
+
+.pt-v2-carousel .pt-card-foto-person {
+	max-height: 130%;
+}
+
+/* Bullets — mesmos estilos do carousel v1 */
+.pt-v2-bullets {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	margin-top: 32px;
+}
+
+.pt-v2-bullet {
+	width: 48px;
+	height: 8px;
+	border: none;
+	border-radius: 4px;
+	background: #D1D5DB;
+	cursor: pointer;
+	transition: background 0.3s, width 0.3s;
+	padding: 0;
+}
+
+.pt-v2-bullet.active {
+	background: var(--pt-primaria, #006B3F);
+	width: 56px;
+}
+
+.pt-v2-bullet:hover:not(.active) {
+	background: #9CA3AF;
+}
+
+/* Tipografia herdada do carousel v1 */
+.pt-v2-carousel .pt-home-title {
+	font-family: var(--pt-typo-carousel-titulo-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-carousel-titulo-font-size, 36px);
+	font-weight: var(--pt-typo-carousel-titulo-font-weight, 700);
+	line-height: var(--pt-typo-carousel-titulo-line-height, 1.2);
+}
+
+.pt-v2-carousel .pt-card-nome {
+	font-family: var(--pt-typo-carousel-nome-font-family, "ClashDisplay-Semibold", "Inter", sans-serif);
+	font-size: var(--pt-typo-carousel-nome-font-size, var(--pt-card-nome-size, 15px));
+	font-weight: var(--pt-typo-carousel-nome-font-weight, 700);
+}
+
+.pt-v2-carousel .pt-card-empresa {
+	font-family: var(--pt-typo-carousel-empresa-font-family, "Inter", sans-serif);
+	font-size: var(--pt-typo-carousel-empresa-font-size, var(--pt-card-cargo-size, 13px));
+	font-weight: var(--pt-typo-carousel-empresa-font-weight, 400);
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+	.pt-v2-grid {
+		grid-template-columns: repeat(4, 1fr) !important;
+	}
+}
+
+@media (max-width: 768px) {
+	.pt-v2-grid {
+		grid-template-columns: repeat(3, 1fr) !important;
+	}
+
+	.pt-v2-bullet {
+		width: 36px;
+		height: 6px;
+	}
+
+	.pt-v2-bullet.active {
+		width: 44px;
+	}
+}
+
+@media (max-width: 480px) {
+	.pt-v2-grid {
+		grid-template-columns: repeat(2, 1fr) !important;
+		gap: 16px 10px;
+	}
+}

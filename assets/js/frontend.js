@@ -389,3 +389,144 @@
 		resizeTimer = setTimeout(buildSlides, 200);
 	});
 })();
+
+/* ==========================================================================
+   CAROUSEL V2 — [event_palestrantes_v2]
+   Navegação via scrollLeft — sem transform, sem GPU compositing layer
+   ========================================================================== */
+(function () {
+	'use strict';
+
+	document.querySelectorAll('.pt-v2-carousel').forEach(function (carousel) {
+		var track            = carousel.querySelector('.pt-v2-track');
+		var bulletsContainer = carousel.querySelector('.pt-v2-bullets');
+		if (!track) return;
+
+		var desktopCols = parseInt(carousel.getAttribute('data-cols'), 10) || 5;
+		var rows        = 2;
+		var autoplay    = carousel.getAttribute('data-autoplay') !== '0';
+		var speed       = parseInt(carousel.getAttribute('data-speed'), 10) || 6;
+
+		// Coleta todos os cards dos slides server-renderizados
+		var allCards = [];
+		track.querySelectorAll('.pt-v2-slide .pt-card-participante').forEach(function (c) {
+			allCards.push(c.cloneNode(true));
+		});
+		if (allCards.length === 0) return;
+
+		var current    = 0;
+		var totalSlides = 0;
+		var autoTimer  = null;
+		var lastBp     = null;
+
+		function getBp() {
+			var w = window.innerWidth;
+			return w <= 480 ? 'mobile' : w <= 768 ? 'tablet' : 'desktop';
+		}
+
+		function getCols(bp) {
+			return bp === 'mobile' ? 2 : bp === 'tablet' ? 3 : desktopCols;
+		}
+
+		function buildSlides() {
+			var bp = getBp();
+			if (bp === lastBp) return;
+			lastBp = bp;
+			stopAuto();
+			current = 0;
+
+			var cols    = getCols(bp);
+			var perPage = cols * rows;
+
+			track.innerHTML  = '';
+			track.scrollLeft = 0;
+
+			var pages = [];
+			for (var i = 0; i < allCards.length; i += perPage) {
+				pages.push(allCards.slice(i, i + perPage));
+			}
+			totalSlides = pages.length;
+
+			pages.forEach(function (page) {
+				var slide = document.createElement('div');
+				slide.className = 'pt-v2-slide';
+				var grid = document.createElement('div');
+				grid.className = 'pt-v2-grid';
+				grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+				page.forEach(function (card) {
+					grid.appendChild(card.cloneNode(true));
+				});
+				slide.appendChild(grid);
+				track.appendChild(slide);
+			});
+
+			// Bullets
+			if (bulletsContainer) {
+				bulletsContainer.innerHTML = '';
+				if (totalSlides > 1) {
+					bulletsContainer.style.display = '';
+					for (var b = 0; b < totalSlides; b++) {
+						var btn = document.createElement('button');
+						btn.className = 'pt-v2-bullet' + (b === 0 ? ' active' : '');
+						btn.setAttribute('data-slide', b);
+						btn.setAttribute('aria-label', 'Slide ' + (b + 1));
+						btn.addEventListener('click', (function (idx) {
+							return function () { goTo(idx); startAuto(); };
+						})(b));
+						bulletsContainer.appendChild(btn);
+					}
+				} else {
+					bulletsContainer.style.display = 'none';
+				}
+			}
+
+			startAuto();
+		}
+
+		function goTo(index) {
+			if (totalSlides <= 1) return;
+			if (index < 0) index = totalSlides - 1;
+			if (index >= totalSlides) index = 0;
+
+			var bullets = bulletsContainer ? bulletsContainer.querySelectorAll('.pt-v2-bullet') : [];
+			if (bullets[current]) bullets[current].classList.remove('active');
+			current = index;
+			if (bullets[current]) bullets[current].classList.add('active');
+
+			// scrollTo em pixels exatos — sem ambiguidade de percentagem
+			track.scrollTo({ left: current * track.clientWidth, behavior: 'smooth' });
+		}
+
+		function startAuto() {
+			stopAuto();
+			if (!autoplay || totalSlides <= 1) return;
+			autoTimer = setInterval(function () { goTo(current + 1); }, speed * 1000);
+		}
+
+		function stopAuto() {
+			if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+		}
+
+		// Touch / swipe
+		var touchStartX = 0;
+		track.addEventListener('touchstart', function (e) {
+			touchStartX = e.changedTouches[0].screenX;
+			stopAuto();
+		}, { passive: true });
+		track.addEventListener('touchend', function (e) {
+			var diff = touchStartX - e.changedTouches[0].screenX;
+			if (Math.abs(diff) > 50) {
+				goTo(diff > 0 ? current + 1 : current - 1);
+			}
+			startAuto();
+		}, { passive: true });
+
+		buildSlides();
+
+		var resizeTimerV2;
+		window.addEventListener('resize', function () {
+			clearTimeout(resizeTimerV2);
+			resizeTimerV2 = setTimeout(buildSlides, 200);
+		});
+	});
+})();

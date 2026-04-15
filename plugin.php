@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.7.6
+ * Version:     1.7.7
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.7.6' );
+define( 'PT_EVENT_VERSION', '1.7.7' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -35,6 +35,7 @@ require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-cards.php'
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-home.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-debatedores.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-patrocinadores.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-home-v2.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/post-types/class-patrocinador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-meta-boxes-patrocinador.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-taxonomy-cota.php';
@@ -98,6 +99,7 @@ final class Plugin {
 		Frontend\Shortcode_Home::get_instance();
 		Frontend\Shortcode_Debatedores::get_instance();
 		Frontend\Shortcode_Patrocinadores::get_instance();
+		Frontend\Shortcode_Home_V2::get_instance();
 		PostTypes\Patrocinador::get_instance();
 		Admin\Meta_Boxes_Patrocinador::get_instance();
 		Admin\Taxonomy_Cota::get_instance();
