@@ -870,6 +870,8 @@
 .pt-home-slides-wrapper {
 	overflow: hidden;
 	position: relative;
+	width: 100%;
+	isolation: isolate;
 }
 
 .pt-home-slides {

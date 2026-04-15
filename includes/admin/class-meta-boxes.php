@@ -112,6 +112,7 @@ class Meta_Boxes {
 		echo '<input type="hidden" name="_pt_event_foto" id="_pt_event_foto" value="' . esc_attr( $foto_id ) . '" />';
 		echo '<button type="button" class="button pt-event-upload-foto">' . esc_html__( 'Selecionar Foto', 'pt-event' ) . '</button> ';
 		echo '<button type="button" class="button pt-event-remove-foto" ' . ( ! $foto_id ? 'style="display:none"' : '' ) . '>' . esc_html__( 'Remover', 'pt-event' ) . '</button>';
+		echo '<p class="description" style="margin-top:6px;">Tamanho recomendado: <strong>600 × 550 px</strong>. Foto do participante da cintura para cima.</p>';
 		echo '</div>';
 		echo '</td>';
 		echo '</tr>';
