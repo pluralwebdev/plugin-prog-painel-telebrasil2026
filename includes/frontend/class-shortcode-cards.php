@@ -21,9 +21,16 @@ class Shortcode_Cards {
 		$empresa      = ! empty( $part['empresa'] ) ? $part['empresa'] : '';
 		$cargo        = ! empty( $part['cargo'] ) ? $part['cargo'] : '';
 		$initials     = Helpers::get_initials( $nome );
-		$foto_largura = ! empty( $part['foto_largura'] ) ? absint( $part['foto_largura'] ) : 0;
-		$foto_unidade = ( ! empty( $part['foto_unidade'] ) && in_array( $part['foto_unidade'], array( '%', 'px' ), true ) ) ? $part['foto_unidade'] : '%';
-		$foto_style   = $foto_largura ? ' style="width:' . $foto_largura . $foto_unidade . '"' : '';
+		$foto_largura   = ! empty( $part['foto_largura'] ) ? absint( $part['foto_largura'] ) : 0;
+		$foto_unidade   = ( ! empty( $part['foto_unidade'] ) && in_array( $part['foto_unidade'], array( '%', 'px' ), true ) ) ? $part['foto_unidade'] : '%';
+		$foto_altura    = ! empty( $part['foto_altura_max'] ) ? absint( $part['foto_altura_max'] ) : 0;
+		$foto_alt_unid  = ( ! empty( $part['foto_alt_unid'] ) && in_array( $part['foto_alt_unid'], array( '%', 'px' ), true ) ) ? $part['foto_alt_unid'] : '%';
+		$foto_offset_y  = isset( $part['foto_offset_y'] ) && '' !== $part['foto_offset_y'] ? intval( $part['foto_offset_y'] ) : null;
+		$foto_css       = '';
+		if ( $foto_largura )              $foto_css .= 'width:' . $foto_largura . $foto_unidade . ';';
+		if ( $foto_altura )               $foto_css .= 'max-height:' . $foto_altura . $foto_alt_unid . ';';
+		if ( null !== $foto_offset_y )    $foto_css .= 'bottom:' . $foto_offset_y . 'px;';
+		$foto_style = $foto_css ? ' style="' . esc_attr( $foto_css ) . '"' : '';
 
 		ob_start();
 		?>

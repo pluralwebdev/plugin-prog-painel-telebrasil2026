@@ -117,20 +117,41 @@ class Meta_Boxes {
 		echo '</td>';
 		echo '</tr>';
 
-		// Tamanho da foto
-		$foto_largura = get_post_meta( $post->ID, '_pt_foto_largura', true );
-		$foto_unidade = get_post_meta( $post->ID, '_pt_foto_unidade', true ) ?: '%';
+		// Ajustes da foto
+		$foto_largura    = get_post_meta( $post->ID, '_pt_foto_largura', true );
+		$foto_unidade    = get_post_meta( $post->ID, '_pt_foto_unidade', true ) ?: '%';
+		$foto_altura_max = get_post_meta( $post->ID, '_pt_foto_altura_max', true );
+		$foto_alt_unid   = get_post_meta( $post->ID, '_pt_foto_alt_unid', true ) ?: '%';
+		$foto_offset_y   = get_post_meta( $post->ID, '_pt_foto_offset_y', true );
 		echo '<tr>';
-		echo '<th><label for="_pt_foto_largura">' . esc_html__( 'Tamanho da foto', 'pt-event' ) . '</label></th>';
+		echo '<th><label>' . esc_html__( 'Ajustes da foto', 'pt-event' ) . '</label></th>';
 		echo '<td>';
+		echo '<table style="border-collapse:collapse;width:100%;">';
+
+		// Largura
+		echo '<tr><td style="padding:4px 8px 4px 0;white-space:nowrap;color:#50575e;font-size:12px;">Largura</td><td style="padding:4px 0;">';
 		echo '<div style="display:flex;align-items:center;gap:6px;">';
-		echo '<input type="number" id="_pt_foto_largura" name="_pt_foto_largura" value="' . esc_attr( $foto_largura ) . '" min="10" max="500" style="width:80px;" />';
-		echo '<select name="_pt_foto_unidade" style="width:60px;">';
-		echo '<option value="%" ' . selected( $foto_unidade, '%', false ) . '>%</option>';
-		echo '<option value="px" ' . selected( $foto_unidade, 'px', false ) . '>px</option>';
-		echo '</select>';
-		echo '</div>';
-		echo '<p class="description">Largura da foto no card. Vazio = padrão (90%). Ex: <code>90%</code> ou <code>220px</code>.</p>';
+		echo '<input type="number" name="_pt_foto_largura" value="' . esc_attr( $foto_largura ) . '" min="10" max="500" placeholder="90" style="width:70px;" />';
+		echo '<select name="_pt_foto_unidade" style="width:55px;"><option value="%" ' . selected( $foto_unidade, '%', false ) . '>%</option><option value="px" ' . selected( $foto_unidade, 'px', false ) . '>px</option></select>';
+		echo '<span style="color:#aaa;font-size:12px;">padrão: 90%</span>';
+		echo '</div></td></tr>';
+
+		// Altura máxima
+		echo '<tr><td style="padding:4px 8px 4px 0;white-space:nowrap;color:#50575e;font-size:12px;">Altura máx.</td><td style="padding:4px 0;">';
+		echo '<div style="display:flex;align-items:center;gap:6px;">';
+		echo '<input type="number" name="_pt_foto_altura_max" value="' . esc_attr( $foto_altura_max ) . '" min="10" max="300" placeholder="100" style="width:70px;" />';
+		echo '<select name="_pt_foto_alt_unid" style="width:55px;"><option value="%" ' . selected( $foto_alt_unid, '%', false ) . '>%</option><option value="px" ' . selected( $foto_alt_unid, 'px', false ) . '>px</option></select>';
+		echo '<span style="color:#aaa;font-size:12px;">padrão: 100% (v2: 130%)</span>';
+		echo '</div></td></tr>';
+
+		// Deslocamento vertical
+		echo '<tr><td style="padding:4px 8px 4px 0;white-space:nowrap;color:#50575e;font-size:12px;">Posição vertical</td><td style="padding:4px 0;">';
+		echo '<div style="display:flex;align-items:center;gap:6px;">';
+		echo '<input type="number" name="_pt_foto_offset_y" value="' . esc_attr( $foto_offset_y ) . '" min="-100" max="100" placeholder="0" style="width:70px;" />';
+		echo '<span style="color:#aaa;font-size:12px;">px &nbsp;(+ sobe / − desce)</span>';
+		echo '</div></td></tr>';
+
+		echo '</table>';
 		echo '</td>';
 		echo '</tr>';
 
@@ -217,7 +238,7 @@ class Meta_Boxes {
 			return;
 		}
 
-		// Tamanho da foto
+		// Ajustes da foto
 		if ( isset( $_POST['_pt_foto_largura'] ) ) {
 			$largura = absint( $_POST['_pt_foto_largura'] );
 			update_post_meta( $post_id, '_pt_foto_largura', $largura ? $largura : '' );
@@ -225,6 +246,18 @@ class Meta_Boxes {
 		if ( isset( $_POST['_pt_foto_unidade'] ) ) {
 			$unidade = in_array( $_POST['_pt_foto_unidade'], array( '%', 'px' ), true ) ? $_POST['_pt_foto_unidade'] : '%';
 			update_post_meta( $post_id, '_pt_foto_unidade', $unidade );
+		}
+		if ( isset( $_POST['_pt_foto_altura_max'] ) ) {
+			$altura = absint( $_POST['_pt_foto_altura_max'] );
+			update_post_meta( $post_id, '_pt_foto_altura_max', $altura ? $altura : '' );
+		}
+		if ( isset( $_POST['_pt_foto_alt_unid'] ) ) {
+			$alt_unid = in_array( $_POST['_pt_foto_alt_unid'], array( '%', 'px' ), true ) ? $_POST['_pt_foto_alt_unid'] : '%';
+			update_post_meta( $post_id, '_pt_foto_alt_unid', $alt_unid );
+		}
+		if ( isset( $_POST['_pt_foto_offset_y'] ) ) {
+			$offset = intval( $_POST['_pt_foto_offset_y'] );
+			update_post_meta( $post_id, '_pt_foto_offset_y', $offset !== 0 ? $offset : '' );
 		}
 
 		$fields = array( 'nome', 'foto', 'cargo', 'empresa', 'tipo_participante', 'bio', 'links', 'confirmado' );

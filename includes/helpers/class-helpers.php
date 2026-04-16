@@ -320,6 +320,9 @@ class Helpers {
 			'exibir_home'      => get_post_meta( $id, '_pt_event_exibir_home', true ),
 			'foto_largura'     => get_post_meta( $id, '_pt_foto_largura', true ),
 			'foto_unidade'     => get_post_meta( $id, '_pt_foto_unidade', true ),
+			'foto_altura_max'  => get_post_meta( $id, '_pt_foto_altura_max', true ),
+			'foto_alt_unid'    => get_post_meta( $id, '_pt_foto_alt_unid', true ),
+			'foto_offset_y'    => get_post_meta( $id, '_pt_foto_offset_y', true ),
 		);
 	}
 
