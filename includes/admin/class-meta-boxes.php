@@ -117,6 +117,23 @@ class Meta_Boxes {
 		echo '</td>';
 		echo '</tr>';
 
+		// Tamanho da foto
+		$foto_largura = get_post_meta( $post->ID, '_pt_foto_largura', true );
+		$foto_unidade = get_post_meta( $post->ID, '_pt_foto_unidade', true ) ?: '%';
+		echo '<tr>';
+		echo '<th><label for="_pt_foto_largura">' . esc_html__( 'Tamanho da foto', 'pt-event' ) . '</label></th>';
+		echo '<td>';
+		echo '<div style="display:flex;align-items:center;gap:6px;">';
+		echo '<input type="number" id="_pt_foto_largura" name="_pt_foto_largura" value="' . esc_attr( $foto_largura ) . '" min="10" max="500" style="width:80px;" />';
+		echo '<select name="_pt_foto_unidade" style="width:60px;">';
+		echo '<option value="%" ' . selected( $foto_unidade, '%', false ) . '>%</option>';
+		echo '<option value="px" ' . selected( $foto_unidade, 'px', false ) . '>px</option>';
+		echo '</select>';
+		echo '</div>';
+		echo '<p class="description">Largura da foto no card. Vazio = padrão (90%). Ex: <code>90%</code> ou <code>220px</code>.</p>';
+		echo '</td>';
+		echo '</tr>';
+
 		foreach ( $fields as $key => $field ) {
 			$meta_key = '_pt_event_' . $key;
 			$value    = get_post_meta( $post->ID, $meta_key, true );
@@ -198,6 +215,16 @@ class Meta_Boxes {
 
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
+		}
+
+		// Tamanho da foto
+		if ( isset( $_POST['_pt_foto_largura'] ) ) {
+			$largura = absint( $_POST['_pt_foto_largura'] );
+			update_post_meta( $post_id, '_pt_foto_largura', $largura ? $largura : '' );
+		}
+		if ( isset( $_POST['_pt_foto_unidade'] ) ) {
+			$unidade = in_array( $_POST['_pt_foto_unidade'], array( '%', 'px' ), true ) ? $_POST['_pt_foto_unidade'] : '%';
+			update_post_meta( $post_id, '_pt_foto_unidade', $unidade );
 		}
 
 		$fields = array( 'nome', 'foto', 'cargo', 'empresa', 'tipo_participante', 'bio', 'links', 'confirmado' );

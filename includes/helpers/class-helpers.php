@@ -318,6 +318,8 @@ class Helpers {
 			'links'            => get_post_meta( $id, '_pt_event_links', true ),
 			'tipo_participante' => get_post_meta( $id, '_pt_event_tipo_participante', true ),
 			'exibir_home'      => get_post_meta( $id, '_pt_event_exibir_home', true ),
+			'foto_largura'     => get_post_meta( $id, '_pt_foto_largura', true ),
+			'foto_unidade'     => get_post_meta( $id, '_pt_foto_unidade', true ),
 		);
 	}
 

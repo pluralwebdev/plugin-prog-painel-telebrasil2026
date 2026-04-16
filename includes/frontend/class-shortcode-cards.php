@@ -16,11 +16,14 @@ class Shortcode_Cards {
 	 * Render a single participant card with background image + PNG photo overlay.
 	 */
 	public static function render_card( $part, $bg_url = '' ) {
-		$img_url  = ! empty( $part['foto'] ) ? wp_get_attachment_image_url( $part['foto'], 'medium_large' ) : '';
-		$nome     = ! empty( $part['nome'] ) ? $part['nome'] : '';
-		$empresa  = ! empty( $part['empresa'] ) ? $part['empresa'] : '';
-		$cargo    = ! empty( $part['cargo'] ) ? $part['cargo'] : '';
-		$initials = Helpers::get_initials( $nome );
+		$img_url      = ! empty( $part['foto'] ) ? wp_get_attachment_image_url( $part['foto'], 'medium_large' ) : '';
+		$nome         = ! empty( $part['nome'] ) ? $part['nome'] : '';
+		$empresa      = ! empty( $part['empresa'] ) ? $part['empresa'] : '';
+		$cargo        = ! empty( $part['cargo'] ) ? $part['cargo'] : '';
+		$initials     = Helpers::get_initials( $nome );
+		$foto_largura = ! empty( $part['foto_largura'] ) ? absint( $part['foto_largura'] ) : 0;
+		$foto_unidade = ( ! empty( $part['foto_unidade'] ) && in_array( $part['foto_unidade'], array( '%', 'px' ), true ) ) ? $part['foto_unidade'] : '%';
+		$foto_style   = $foto_largura ? ' style="width:' . $foto_largura . $foto_unidade . '"' : '';
 
 		ob_start();
 		?>
@@ -30,7 +33,7 @@ class Shortcode_Cards {
 					<img class="pt-card-foto-bg" src="<?php echo esc_url( $bg_url ); ?>" alt="" loading="lazy" />
 				<?php endif; ?>
 				<?php if ( $img_url ) : ?>
-					<img class="pt-card-foto-person" src="<?php echo esc_url( $img_url ); ?>" alt="<?php echo esc_attr( $nome ); ?>" loading="lazy" />
+					<img class="pt-card-foto-person" src="<?php echo esc_url( $img_url ); ?>" alt="<?php echo esc_attr( $nome ); ?>" loading="lazy"<?php echo $foto_style; ?> />
 				<?php else : ?>
 					<div class="pt-card-foto-placeholder"><?php echo esc_html( $initials ); ?></div>
 				<?php endif; ?>
