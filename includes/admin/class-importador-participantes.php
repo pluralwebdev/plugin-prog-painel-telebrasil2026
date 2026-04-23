@@ -124,12 +124,23 @@ class Importador_Participantes {
 
 				<p style="margin-top: 20px;">
 					<button type="button" id="pt-ip-voltar" class="button">&#8592; Voltar</button>
-					<button type="button" id="pt-ip-confirmar" class="button button-primary button-hero">Importar Participantes</button>
+					<button type="button" id="pt-ip-confirmar" class="button button-primary button-hero">Revisar importação &#8594;</button>
 				</p>
 			</div>
 
-			<!-- STEP 3 -->
+			<!-- STEP 3: Revisão antes de confirmar -->
 			<div id="pt-ip-step-3" class="pt-ip-step" style="display:none;">
+				<h2>3. Confirme o que será importado</h2>
+				<p class="description">Verifique os dados abaixo. Apenas ao clicar em <strong>Confirmar e Importar</strong> os dados serão salvos.</p>
+				<div id="pt-ip-summary-content"></div>
+				<p style="margin-top: 20px;">
+					<button type="button" id="pt-ip-editar" class="button">&#8592; Editar</button>
+					<button type="button" id="pt-ip-executar" class="button button-primary button-hero" style="background:#d63638;border-color:#d63638;">Confirmar e Importar</button>
+				</p>
+			</div>
+
+			<!-- STEP 4: Sucesso -->
+			<div id="pt-ip-step-4" class="pt-ip-step" style="display:none;">
 				<div class="notice notice-success"><p id="pt-ip-resultado"></p></div>
 				<p>
 					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=pt_participante' ) ); ?>" class="button button-primary">Ver Participantes</a>
@@ -170,12 +181,22 @@ class Importador_Participantes {
 			.pt-ip-no-sessoes { padding: 10px 8px; font-size: 12px; color: #999; text-align: center; }
 			.pt-ip-card-remove { margin-left: auto; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 1px 8px; border-radius: 3px; cursor: pointer; font-size: 13px; flex-shrink: 0; }
 			.pt-ip-card-remove:hover { background: #d63638; border-color: #d63638; }
+
+			/* Summary (step 3) */
+			.pt-ip-summary-header { font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+			.pt-ip-badge { display: inline-block; border-radius: 3px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
+			.pt-ip-badge-novo   { background: #d1fae5; color: #065f46; }
+			.pt-ip-badge-update { background: #fef3c7; color: #92400e; }
+			.pt-ip-summary-table { margin-top: 8px; }
+			.pt-ip-summary-table td { vertical-align: top; font-size: 13px; }
+			.pt-ip-summary-table .pt-ip-sess-list { font-size: 11px; color: #50575e; line-height: 1.6; }
 		</style>
 
 		<script>
 		(function($) {
-			var nonce    = '<?php echo esc_js( $nonce ); ?>';
-			var sessoes  = <?php echo $sessoes_json; ?>;
+			var nonce              = '<?php echo esc_js( $nonce ); ?>';
+			var sessoes            = <?php echo $sessoes_json; ?>;
+			var dadosParaImportar  = [];
 
 			// ---- Step 1: Parse com IA ----
 
@@ -341,26 +362,66 @@ class Importador_Participantes {
 				$('#pt-ip-step-1').slideDown(200);
 			});
 
+			$('#pt-ip-editar').on('click', function() {
+				$('#pt-ip-step-3').slideUp(200);
+				$('#pt-ip-step-2').slideDown(200);
+			});
+
 			$('#pt-ip-nova').on('click', function() {
 				$('#pt-ip-texto').val('');
 				$('#pt-ip-preview').html('');
-				$('#pt-ip-step-3').slideUp(200);
+				dadosParaImportar = [];
+				$('#pt-ip-step-4').slideUp(200);
 				$('#pt-ip-step-1').slideDown(200);
 			});
 
-			// ---- Import ----
+			// ---- Step 2 → Step 3: coletar e mostrar resumo ----
 
 			$('#pt-ip-confirmar').on('click', function() {
-				var $btn = $(this).prop('disabled', true).text('Importando...');
-				var participantes = [];
+				var participantes = collectParticipantes();
+				if (!participantes.length) {
+					alert('Nenhum participante para importar.');
+					return;
+				}
+				dadosParaImportar = participantes;
+				renderSummary(participantes);
+				$('#pt-ip-step-2').slideUp(200);
+				$('#pt-ip-step-3').slideDown(200);
+			});
 
+			// ---- Step 3 → Executar importação ----
+
+			$('#pt-ip-executar').on('click', function() {
+				var $btn = $(this).prop('disabled', true).text('Importando...');
+				$.post(ajaxurl, {
+					action:        'pt_event_importar_participantes',
+					nonce:         nonce,
+					participantes: JSON.stringify(dadosParaImportar)
+				}, function(res) {
+					$btn.prop('disabled', false).text('Confirmar e Importar');
+					if (res.success) {
+						$('#pt-ip-resultado').html(res.data.message);
+						$('#pt-ip-step-3').slideUp(200);
+						$('#pt-ip-step-4').slideDown(200);
+					} else {
+						alert('Erro: ' + (res.data || 'Erro desconhecido'));
+					}
+				}).fail(function() {
+					$btn.prop('disabled', false).text('Confirmar e Importar');
+					alert('Erro na requisição.');
+				});
+			});
+
+			// ---- Helpers ----
+
+			function collectParticipantes() {
+				var participantes = [];
 				$('#pt-ip-preview .pt-ip-card').each(function() {
-					var $card  = $(this);
+					var $card     = $(this);
 					var sessaoIds = [];
 					$card.find('.pt-ip-sessao-check:checked').each(function() {
 						sessaoIds.push($(this).val());
 					});
-
 					participantes.push({
 						db_id:      $card.data('db-id') || '',
 						nome:       $card.find('.pt-ip-nome').val(),
@@ -372,34 +433,75 @@ class Importador_Participantes {
 						sessoes:    sessaoIds
 					});
 				});
+				return participantes;
+			}
 
-				if (!participantes.length) {
-					alert('Nenhum participante para importar.');
-					$btn.prop('disabled', false).text('Importar Participantes');
-					return;
+			function getSessaoLabel(id) {
+				for (var i = 0; i < sessoes.length; i++) {
+					if (String(sessoes[i].id) === String(id)) {
+						var s = sessoes[i];
+						var hora = s.hora_inicio ? s.hora_inicio + (s.hora_fim ? '–' + s.hora_fim : '') + ' ' : '';
+						return hora + (s.titulo || 'Sessão ' + id);
+					}
+				}
+				return 'Sessão ' + id;
+			}
+
+			function renderSummary(participantes) {
+				var novos      = participantes.filter(function(p) { return !p.db_id; });
+				var existentes = participantes.filter(function(p) { return !!p.db_id; });
+
+				var html = '<div class="pt-ip-summary-header">';
+				html += '<strong>' + participantes.length + ' participante(s) para importar:</strong>';
+				if (novos.length)      html += ' <span class="pt-ip-badge pt-ip-badge-novo">'    + novos.length      + ' novo(s)</span>';
+				if (existentes.length) html += ' <span class="pt-ip-badge pt-ip-badge-update">'  + existentes.length + ' já cadastrado(s) &mdash; dados serão sobrescritos</span>';
+				html += '</div>';
+
+				if (existentes.length) {
+					html += '<div class="notice notice-warning inline" style="margin:10px 0 4px;">';
+					html += '<p>&#9888; Participantes marcados como <strong>Já cadastrado</strong> terão nome, cargo e foto <strong>sobrescritos</strong> com os dados da revisão. Volte e corrija se necessário.</p>';
+					html += '</div>';
 				}
 
-				$.post(ajaxurl, {
-					action:        'pt_event_importar_participantes',
-					nonce:         nonce,
-					participantes: JSON.stringify(participantes)
-				}, function(res) {
-					$btn.prop('disabled', false).text('Importar Participantes');
-					if (res.success) {
-						$('#pt-ip-resultado').html(res.data.message);
-						$('#pt-ip-step-2').slideUp(200);
-						$('#pt-ip-step-3').slideDown(200);
+				html += '<table class="wp-list-table widefat striped pt-ip-summary-table">';
+				html += '<thead><tr><th style="width:30px">#</th><th>Nome</th><th>Cargo</th><th>Papel</th><th>Confirmado</th><th>Sessões</th><th>Status</th></tr></thead>';
+				html += '<tbody>';
+
+				$.each(participantes, function(i, p) {
+					var badge = p.db_id
+						? '<span class="pt-ip-badge pt-ip-badge-update">Já cadastrado &mdash; atualizar</span>'
+						: '<span class="pt-ip-badge pt-ip-badge-novo">Novo</span>';
+
+					var sessList = '';
+					if (p.sessoes.length) {
+						sessList = '<ul class="pt-ip-sess-list" style="margin:0;padding:0;list-style:none;">';
+						$.each(p.sessoes, function(j, sid) {
+							sessList += '<li>&#8226; ' + esc(getSessaoLabel(sid)) + '</li>';
+						});
+						sessList += '</ul>';
 					} else {
-						alert('Erro: ' + (res.data || 'Erro desconhecido'));
+						sessList = '<span style="color:#aaa;">—</span>';
 					}
-				}).fail(function() {
-					$btn.prop('disabled', false).text('Importar Participantes');
-					alert('Erro na requisição.');
+
+					var confirmLabel = p.confirmado === 'sim' ? 'Sim' : (p.confirmado === 'cancelado' ? 'Cancelado' : 'Não');
+
+					html += '<tr>';
+					html += '<td>' + (i + 1) + '</td>';
+					html += '<td><strong>' + esc(p.nome) + '</strong></td>';
+					html += '<td>' + esc(p.cargo || '') + '</td>';
+					html += '<td>' + esc(p.papel || '—') + '</td>';
+					html += '<td>' + confirmLabel + '</td>';
+					html += '<td>' + sessList + '</td>';
+					html += '<td>' + badge + '</td>';
+					html += '</tr>';
 				});
-			});
+
+				html += '</tbody></table>';
+				$('#pt-ip-summary-content').html(html);
+			}
 
 			function esc(s)  { return $('<div>').text(s || '').html(); }
-			function escA(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+			function escA(s) { return ('' + (s != null ? s : '')).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 		})(jQuery);
 		</script>
