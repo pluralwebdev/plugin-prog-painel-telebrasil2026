@@ -105,7 +105,7 @@ class Shortcode {
 											<div class="pt-participantes-area">
 												<?php foreach ( $grouped as $papel => $parts ) : ?>
 													<div class="pt-papel-section">
-														<div class="pt-papel-label"><?php echo esc_html( $papel ); ?></div>
+														<div class="pt-papel-label"><?php echo esc_html( $this->get_papel_label( $papel, count( $parts ) ) ); ?></div>
 														<div class="pt-participantes-row pt-participantes-grid">
 															<?php foreach ( $parts as $part ) : ?>
 																<?php echo Shortcode_Cards::render_card( $part, $bg_url ); ?>
@@ -189,6 +189,22 @@ class Shortcode {
 			$grouped[ $papel ][] = $part;
 		}
 		return $grouped;
+	}
+
+	private function get_papel_label( $papel, $count ) {
+		if ( $count <= 1 ) {
+			return $papel;
+		}
+		$plural = array(
+			'Participante' => 'Participantes',
+			'Palestrante'  => 'Palestrantes',
+			'Moderador'    => 'Moderadores',
+			'Debatedor'    => 'Debatedores',
+			'Convidado'    => 'Convidados',
+			'Keynote'      => 'Keynotes',
+			'Abertura'     => 'Abertura',
+		);
+		return isset( $plural[ $papel ] ) ? $plural[ $papel ] : $papel . 's';
 	}
 
 	private function build_css_vars( $settings ) {
