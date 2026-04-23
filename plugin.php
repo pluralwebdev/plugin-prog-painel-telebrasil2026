@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.9.0
+ * Version:     1.9.1
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.9.0' );
+define( 'PT_EVENT_VERSION', '1.9.1' );
 define( 'PT_EVENT_DB_VERSION', '1.1' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -46,6 +46,7 @@ require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-ordenar-participantes.p
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-editor.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-admin-filters.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-seeder.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-manual.php';
 
 final class Plugin {
 
@@ -117,6 +118,7 @@ final class Plugin {
 		Admin\Importador_Participantes::get_instance();
 		Admin\Ordenar_Participantes::get_instance();
 		Admin\Editor::get_instance();
+		Admin\Manual::get_instance();
 		Admin\Admin_Filters::get_instance();
 		Admin\Seeder::get_instance();
 	}
