@@ -700,7 +700,7 @@ Formato de retorno:
 						$sessao_id, $part_id
 					) );
 					if ( ! $exists ) {
-						Relationship::add( $sessao_id, $part_id, $papel, $max_ordem + 1 );
+						Relationship::add( $sessao_id, $part_id, $papel, $max_ordem + 1, $cargo );
 						$count_linked++;
 					}
 				}

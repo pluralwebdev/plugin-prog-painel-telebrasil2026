@@ -768,7 +768,7 @@ class Importador {
 				// Ainda vincula se existir
 				$existing_id = $this->find_existing_participante( $nome );
 				if ( $existing_id ) {
-					Relationship::add( $sessao_id, $existing_id, $papel, $p_ordem );
+					Relationship::add( $sessao_id, $existing_id, $papel, $p_ordem, $cargo );
 					$p_ordem++;
 				}
 				continue;
@@ -789,19 +789,19 @@ class Importador {
 					update_post_meta( $existing_id, '_pt_event_foto', $foto_id );
 					set_post_thumbnail( $existing_id, $foto_id );
 				}
-				Relationship::add( $sessao_id, $existing_id, $papel, $p_ordem );
+				Relationship::add( $sessao_id, $existing_id, $papel, $p_ordem, $cargo );
 				$p_ordem++;
 				continue;
 			}
 
 			if ( $existing_id && 'criar' !== $dup_action ) {
 				// Default: vincular existente
-				Relationship::add( $sessao_id, $existing_id, $papel, $p_ordem );
+				Relationship::add( $sessao_id, $existing_id, $papel, $p_ordem, $cargo );
 				$p_ordem++;
 				continue;
 			}
 
-			// Criar novo participante
+			// Criar novo participante — cargo vai para post meta como padrão
 			$part_id = wp_insert_post( array(
 				'post_type'   => 'pt_participante',
 				'post_title'  => $nome,
@@ -821,7 +821,7 @@ class Importador {
 				set_post_thumbnail( $part_id, $foto_id );
 			}
 
-			Relationship::add( $sessao_id, $part_id, $papel, $p_ordem );
+			Relationship::add( $sessao_id, $part_id, $papel, $p_ordem, $cargo );
 			$p_ordem++;
 			$count_new++;
 		}

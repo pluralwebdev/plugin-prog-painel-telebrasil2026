@@ -59,6 +59,7 @@ class Sessao_Participantes {
 					<tr>
 						<th class="pt-event-col-order"><?php esc_html_e( 'Ordem', 'pt-event' ); ?></th>
 						<th><?php esc_html_e( 'Participante', 'pt-event' ); ?></th>
+						<th><?php esc_html_e( 'Cargo nesta sessão', 'pt-event' ); ?></th>
 						<th><?php esc_html_e( 'Papel', 'pt-event' ); ?></th>
 						<th class="pt-event-col-actions"><?php esc_html_e( 'Ações', 'pt-event' ); ?></th>
 					</tr>
@@ -79,6 +80,13 @@ class Sessao_Participantes {
 									<input type="hidden" name="pt_event_parts[<?php echo $index; ?>][ordem]" value="<?php echo esc_attr( $rel->ordem ); ?>" class="pt-event-ordem" />
 								</td>
 								<td><?php echo esc_html( $nome ); ?></td>
+								<td>
+									<input type="text"
+										name="pt_event_parts[<?php echo $index; ?>][cargo]"
+										value="<?php echo esc_attr( $rel->cargo ?? '' ); ?>"
+										placeholder="<?php esc_attr_e( 'Deixe em branco para usar o padrão', 'pt-event' ); ?>"
+										class="regular-text" />
+								</td>
 								<td>
 									<select name="pt_event_parts[<?php echo $index; ?>][papel]">
 										<?php foreach ( $papeis as $val => $label ) : ?>
@@ -106,6 +114,13 @@ class Sessao_Participantes {
 					<input type="hidden" name="pt_event_parts[{{data.index}}][ordem]" value="{{data.index}}" class="pt-event-ordem" />
 				</td>
 				<td>{{data.nome}}</td>
+				<td>
+					<input type="text"
+						name="pt_event_parts[{{data.index}}][cargo]"
+						value="{{data.cargo}}"
+						placeholder="<?php esc_attr_e( 'Deixe em branco para usar o padrão', 'pt-event' ); ?>"
+						class="regular-text" />
+				</td>
 				<td>
 					<select name="pt_event_parts[{{data.index}}][papel]">
 						<?php foreach ( $papeis as $val => $label ) : ?>
@@ -140,10 +155,11 @@ class Sessao_Participantes {
 			foreach ( $_POST['pt_event_parts'] as $index => $part ) {
 				$participante_id = absint( $part['id'] );
 				$papel           = sanitize_text_field( $part['papel'] );
+				$cargo           = sanitize_text_field( $part['cargo'] ?? '' );
 				$ordem           = absint( $part['ordem'] );
 
 				if ( $participante_id > 0 ) {
-					Relationship::add( $post_id, $participante_id, $papel, $ordem );
+					Relationship::add( $post_id, $participante_id, $papel, $ordem, $cargo );
 				}
 			}
 		}

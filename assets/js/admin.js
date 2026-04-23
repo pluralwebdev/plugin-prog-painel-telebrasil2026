@@ -43,7 +43,7 @@
 							if (response.success && response.data.length) {
 								var html = '';
 								$.each(response.data, function (i, item) {
-									html += '<div class="pt-event-search-result-item" data-id="' + item.id + '" data-nome="' + PTEventAdmin.escapeHtml(item.nome) + '">';
+									html += '<div class="pt-event-search-result-item" data-id="' + item.id + '" data-nome="' + PTEventAdmin.escapeHtml(item.nome) + '" data-cargo="' + PTEventAdmin.escapeHtml(item.cargo) + '">';
 									html += '<div class="nome">' + PTEventAdmin.escapeHtml(item.nome) + '</div>';
 									if (item.cargo) {
 										html += '<div class="cargo">' + PTEventAdmin.escapeHtml(item.cargo) + '</div>';
@@ -60,8 +60,9 @@
 			});
 
 			$results.on('click', '.pt-event-search-result-item', function () {
-				var id = $(this).data('id');
-				var nome = $(this).data('nome');
+				var id    = $(this).data('id');
+				var nome  = $(this).data('nome');
+				var cargo = $(this).data('cargo') || '';
 
 				if (!id || !nome) return;
 
@@ -79,7 +80,7 @@
 					return;
 				}
 
-				PTEventAdmin.addRow(id, nome);
+				PTEventAdmin.addRow(id, nome, cargo);
 				$input.val('');
 				$results.removeClass('active').empty();
 			});
@@ -95,12 +96,12 @@
 		// =====================================================================
 		// Adicionar linha de participante
 		// =====================================================================
-		addRow: function (id, nome) {
+		addRow: function (id, nome, cargo) {
 			var $tbody = $('#pt-event-participantes-list');
 			var index = $tbody.find('tr').length;
 
 			var tmpl = wp.template('pt-event-participante-row');
-			var html = tmpl({ id: id, nome: nome, index: index });
+			var html = tmpl({ id: id, nome: nome, cargo: cargo || '', index: index });
 
 			$tbody.append(html);
 			this.updateOrdens();

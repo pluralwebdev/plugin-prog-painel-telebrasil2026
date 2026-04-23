@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.8.0
+ * Version:     1.9.0
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.8.0' );
+define( 'PT_EVENT_VERSION', '1.9.0' );
+define( 'PT_EVENT_DB_VERSION', '1.1' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -67,12 +68,21 @@ final class Plugin {
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'init', array( $this, 'init_components' ) );
+		add_action( 'admin_init', array( $this, 'maybe_upgrade_db' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'frontend_assets' ) );
 	}
 
+	public function maybe_upgrade_db() {
+		if ( get_option( 'pt_event_db_version' ) !== PT_EVENT_DB_VERSION ) {
+			Database\Relationship::create_table();
+			update_option( 'pt_event_db_version', PT_EVENT_DB_VERSION );
+		}
+	}
+
 	public function activate() {
 		Database\Relationship::create_table();
+		update_option( 'pt_event_db_version', PT_EVENT_DB_VERSION );
 
 		// Register CPTs before seeding terms
 		PostTypes\Patrocinador::get_instance();

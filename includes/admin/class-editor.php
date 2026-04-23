@@ -81,7 +81,9 @@ class Editor {
 				$participantes[] = array(
 					'db_id'      => $pid,
 					'nome'       => get_post_meta( $pid, '_pt_event_nome', true ),
-					'cargo'      => get_post_meta( $pid, '_pt_event_cargo', true ),
+					'cargo'      => ! empty( $rel->cargo )
+						? $rel->cargo
+						: get_post_meta( $pid, '_pt_event_cargo', true ),
 					'papel'      => $rel->papel,
 					'confirmado' => get_post_meta( $pid, '_pt_event_confirmado', true ) ?: 'nao',
 					'foto_id'    => $foto_id ? absint( $foto_id ) : 0,
@@ -849,7 +851,6 @@ class Editor {
 						// Update existing participant
 						wp_update_post( array( 'ID' => $p_db_id, 'post_title' => $nome ) );
 						update_post_meta( $p_db_id, '_pt_event_nome', $nome );
-						update_post_meta( $p_db_id, '_pt_event_cargo', $cargo );
 						update_post_meta( $p_db_id, '_pt_event_confirmado', $confirmado );
 						if ( $foto_id ) {
 							update_post_meta( $p_db_id, '_pt_event_foto', $foto_id );
@@ -862,7 +863,6 @@ class Editor {
 						$existing = $this->find_existing_participante( $nome );
 						if ( $existing ) {
 							// Link existing, update data
-							update_post_meta( $existing, '_pt_event_cargo', $cargo );
 							update_post_meta( $existing, '_pt_event_confirmado', $confirmado );
 							if ( $foto_id ) {
 								update_post_meta( $existing, '_pt_event_foto', $foto_id );
@@ -871,7 +871,7 @@ class Editor {
 							$part_id = $existing;
 							$count_parts_upd++;
 						} else {
-							// Create new participant
+							// Create new participant — cargo goes to post meta as default
 							$part_id = wp_insert_post( array(
 								'post_type'   => 'pt_participante',
 								'post_title'  => $nome,
@@ -891,7 +891,8 @@ class Editor {
 						}
 					}
 
-					Relationship::add( $sessao_id, $part_id, $papel, $p_ordem );
+					// Cargo is stored per-session in the junction table
+					Relationship::add( $sessao_id, $part_id, $papel, $p_ordem, $cargo );
 					$p_ordem++;
 				}
 			}

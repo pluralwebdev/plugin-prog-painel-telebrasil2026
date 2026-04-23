@@ -143,7 +143,7 @@ class Helpers {
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT sp.participante_id, sp.papel, sp.ordem
+				"SELECT sp.participante_id, sp.papel, sp.cargo, sp.ordem
 				FROM {$table} AS sp
 				INNER JOIN {$wpdb->posts} AS p ON p.ID = sp.participante_id
 				WHERE sp.sessao_id = %d
@@ -170,7 +170,9 @@ class Helpers {
 				'ordem'   => $row->ordem,
 				'nome'    => get_post_meta( $row->participante_id, '_pt_event_nome', true ),
 				'foto'    => get_post_meta( $row->participante_id, '_pt_event_foto', true ),
-				'cargo'   => get_post_meta( $row->participante_id, '_pt_event_cargo', true ),
+				'cargo'   => ! empty( $row->cargo )
+					? $row->cargo
+					: get_post_meta( $row->participante_id, '_pt_event_cargo', true ),
 				'empresa' => get_post_meta( $row->participante_id, '_pt_event_empresa', true ),
 				'bio'     => get_post_meta( $row->participante_id, '_pt_event_bio', true ),
 				'links'   => get_post_meta( $row->participante_id, '_pt_event_links', true ),

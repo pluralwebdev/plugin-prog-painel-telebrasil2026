@@ -18,6 +18,7 @@ class Relationship {
 			sessao_id bigint(20) unsigned NOT NULL,
 			participante_id bigint(20) unsigned NOT NULL,
 			papel varchar(100) NOT NULL DEFAULT '',
+			cargo varchar(500) NOT NULL DEFAULT '',
 			ordem int(11) NOT NULL DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY sessao_id (sessao_id),
@@ -29,7 +30,7 @@ class Relationship {
 		dbDelta( $sql );
 	}
 
-	public static function add( $sessao_id, $participante_id, $papel = '', $ordem = 0 ) {
+	public static function add( $sessao_id, $participante_id, $papel = '', $ordem = 0, $cargo = '' ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'evento_sessao_participantes';
 
@@ -39,9 +40,10 @@ class Relationship {
 				'sessao_id'       => absint( $sessao_id ),
 				'participante_id' => absint( $participante_id ),
 				'papel'           => sanitize_text_field( $papel ),
+				'cargo'           => sanitize_text_field( $cargo ),
 				'ordem'           => absint( $ordem ),
 			),
-			array( '%d', '%d', '%s', '%d' )
+			array( '%d', '%d', '%s', '%s', '%d' )
 		);
 	}
 
