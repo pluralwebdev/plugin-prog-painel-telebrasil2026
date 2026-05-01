@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.9.3
+ * Version:     1.9.4
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.9.3' );
+define( 'PT_EVENT_VERSION', '1.9.4' );
 define( 'PT_EVENT_DB_VERSION', '1.1' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

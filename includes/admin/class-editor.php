@@ -209,8 +209,11 @@ class Editor {
 			.pt-status-cancelado { color: #d63638; font-weight: 600; }
 			.pt-dia-divider { background: #1d2327; color: #fff; padding: 10px 14px; font-size: 15px; font-weight: 700; margin-bottom: 16px; margin-top: 24px; }
 			.pt-dia-divider:first-child { margin-top: 0; }
-			.pt-btn-remove-sessao { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: auto; flex-shrink: 0; }
+			.pt-sessao-header-actions { display: flex; gap: 4px; align-items: center; margin-left: auto; flex-shrink: 0; }
+			.pt-btn-remove-sessao { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; flex-shrink: 0; }
 			.pt-btn-remove-sessao:hover { background: #d63638; border-color: #d63638; }
+			.pt-btn-move-up, .pt-btn-move-down { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 2px 7px; border-radius: 3px; cursor: pointer; font-size: 10px; flex-shrink: 0; line-height: 1.4; }
+			.pt-btn-move-up:hover, .pt-btn-move-down:hover { background: rgba(255,255,255,0.3); }
 			.pt-btn-remove-part { background: #f0f0f1; border: 1px solid #c3c4c7; color: #d63638; padding: 2px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; flex-shrink: 0; }
 			.pt-btn-remove-part:hover { background: #d63638; color: #fff; border-color: #d63638; }
 			.pt-btn-add-part { background: #f0f6fc; border: 1px dashed #2271b1; color: #2271b1; padding: 6px 14px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: 600; margin-top: 8px; display: inline-block; }
@@ -266,7 +269,11 @@ class Editor {
 				html += '</span>';
 				var partCount = (s.participantes && s.participantes.length) ? s.participantes.length : 0;
 				html += '<span class="pt-sessao-badge">' + partCount + ' participante(s)</span>';
+				html += '<div class="pt-sessao-header-actions">';
+				html += '<button type="button" class="pt-btn-move-up" title="Mover para cima">&#9650;</button>';
+				html += '<button type="button" class="pt-btn-move-down" title="Mover para baixo">&#9660;</button>';
 				html += '<button type="button" class="pt-btn-remove-sessao" title="Remover sessão">&times;</button>';
+				html += '</div>';
 				html += '</div>';
 
 				html += '<div class="pt-sessao-fields">';
@@ -447,6 +454,30 @@ class Editor {
 					if (pId) deletedParts.push(pId);
 				});
 				$block.slideUp(200, function() { $(this).remove(); updateDayDividers(); triggerPreviewDebounce(); });
+			});
+
+			// Mover sessão para cima
+			$('#pt-editor-preview').on('click', '.pt-btn-move-up', function() {
+				var $block = $(this).closest('.pt-sessao-block');
+				var $target = $block.prevAll('.pt-sessao-block').first();
+				if ($target.length) {
+					$target.before($block);
+					renumberOrdens();
+					updateDayDividers();
+					triggerPreviewDebounce();
+				}
+			});
+
+			// Mover sessão para baixo
+			$('#pt-editor-preview').on('click', '.pt-btn-move-down', function() {
+				var $block = $(this).closest('.pt-sessao-block');
+				var $target = $block.nextAll('.pt-sessao-block').first();
+				if ($target.length) {
+					$target.after($block);
+					renumberOrdens();
+					updateDayDividers();
+					triggerPreviewDebounce();
+				}
 			});
 
 			// Remover participante
