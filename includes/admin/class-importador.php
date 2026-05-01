@@ -357,7 +357,7 @@ class Importador {
 
 				h += '<div class="pt-part-cargo"><input type="text" class="pt-p-cargo" value="' + escA(p.cargo) + '" placeholder="Cargo / Empresa" /></div>';
 				h += '<div class="pt-part-papel"><select class="pt-p-papel">';
-				var papeis = ['', 'palestrante', 'moderador', 'debatedor', 'keynote', 'abertura'];
+				var papeis = ['', 'palestrante', 'conferencista', 'moderador', 'debatedor', 'keynote', 'abertura'];
 				$.each(papeis, function(_, v) {
 					var label = v ? v.charAt(0).toUpperCase() + v.slice(1) : '-- Papel --';
 					h += '<option value="' + v + '"' + (v === p.papel ? ' selected' : '') + '>' + label + '</option>';
@@ -733,6 +733,27 @@ class Importador {
 			if ( $sessao_id && ! empty( $s['participantes'] ) ) {
 				$this->process_participantes( $sessao_id, $s['participantes'], $count_parts );
 			}
+		}
+
+		// Reordenar toda a programação por dia + hora_inicio após o import
+		$todas = get_posts( array(
+			'post_type'      => 'pt_sessao',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
+		) );
+
+		usort( $todas, function( $a, $b ) {
+			$dia_a  = get_post_meta( $a, '_pt_event_dia', true );
+			$dia_b  = get_post_meta( $b, '_pt_event_dia', true );
+			$hora_a = get_post_meta( $a, '_pt_event_hora_inicio', true );
+			$hora_b = get_post_meta( $b, '_pt_event_hora_inicio', true );
+			if ( $dia_a !== $dia_b ) return strcmp( $dia_a, $dia_b );
+			return strcmp( $hora_a, $hora_b );
+		} );
+
+		foreach ( $todas as $new_ordem => $sid ) {
+			update_post_meta( $sid, '_pt_event_ordem', $new_ordem );
 		}
 
 		$parts = array();
@@ -1192,13 +1213,15 @@ class Importador {
 	private function normalize_papel( $papel ) {
 		$lower = mb_strtolower( trim( $papel ), 'UTF-8' );
 		$map = array(
-			'moderador'  => 'moderador',
-			'moderadora' => 'moderador',
-			'moderação'  => 'moderador',
-			'moderacao'  => 'moderador',
-			'abertura'   => 'abertura',
-			'debatedor'  => 'debatedor',
-			'debatedores' => 'debatedor',
+			'moderador'      => 'moderador',
+			'moderadora'     => 'moderador',
+			'moderação'      => 'moderador',
+			'moderacao'      => 'moderador',
+			'abertura'       => 'abertura',
+			'debatedor'      => 'debatedor',
+			'debatedores'    => 'debatedor',
+			'conferencista'  => 'conferencista',
+			'conferencistas' => 'conferencista',
 		);
 		return isset( $map[ $lower ] ) ? $map[ $lower ] : 'palestrante';
 	}

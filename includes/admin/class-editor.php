@@ -232,7 +232,9 @@ class Editor {
 			var deletedParts = [];
 			var previewTimer = null;
 
-			renderEditor(sessoes);
+			$(document).ready(function() {
+				renderEditor(sessoes);
+			});
 
 			// ---- Rendering ----
 
@@ -309,7 +311,7 @@ class Editor {
 				h += '</div>';
 				h += '<div class="pt-part-cargo"><input type="text" class="pt-p-cargo" value="' + escA(p.cargo) + '" placeholder="Cargo / Empresa" /></div>';
 				h += '<div class="pt-part-papel"><select class="pt-p-papel">';
-				var papeis = ['', 'palestrante', 'moderador', 'debatedor', 'keynote', 'abertura'];
+				var papeis = ['', 'palestrante', 'conferencista', 'moderador', 'debatedor', 'keynote', 'abertura'];
 				$.each(papeis, function(_, v) {
 					var label = v ? v.charAt(0).toUpperCase() + v.slice(1) : '-- Papel --';
 					h += '<option value="' + v + '"' + (v === p.papel ? ' selected' : '') + '>' + label + '</option>';

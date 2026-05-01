@@ -173,11 +173,12 @@ class Meta_Boxes {
 			} elseif ( 'select_tipo' === $field['type'] ) {
 				$tipos = array(
 					''             => __( '— Selecionar —', 'pt-event' ),
-					'debatedor'    => __( 'Debatedor', 'pt-event' ),
-					'fireside'     => __( 'Fireside', 'pt-event' ),
-					'keynote'      => __( 'Keynote', 'pt-event' ),
-					'moderador'    => __( 'Moderador', 'pt-event' ),
-					'patrocinador' => __( 'Patrocinador', 'pt-event' ),
+					'conferencista' => __( 'Conferencista', 'pt-event' ),
+					'debatedor'     => __( 'Debatedor', 'pt-event' ),
+					'fireside'      => __( 'Fireside', 'pt-event' ),
+					'keynote'       => __( 'Keynote', 'pt-event' ),
+					'moderador'     => __( 'Moderador', 'pt-event' ),
+					'patrocinador'  => __( 'Patrocinador', 'pt-event' ),
 				);
 				echo '<select id="' . esc_attr( $meta_key ) . '" name="' . esc_attr( $meta_key ) . '">';
 				foreach ( $tipos as $val => $label ) {
