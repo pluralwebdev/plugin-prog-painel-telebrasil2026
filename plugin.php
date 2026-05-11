@@ -3,7 +3,7 @@
  * Plugin Name: Programação de Eventos
  * Plugin URI:  https://pluralweb.biz
  * Description: Plugin para cadastro e exibição dinâmica de programação de eventos com sessões e participantes.
- * Version:     1.9.4
+ * Version:     1.10.0
  * Author:      Plural Web
  * Author URI:  https://pluralweb.biz
  * Text Domain: pt-event
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PT_EVENT_VERSION', '1.9.4' );
+define( 'PT_EVENT_VERSION', '1.10.0' );
 define( 'PT_EVENT_DB_VERSION', '1.1' );
 define( 'PT_EVENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PT_EVENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -30,6 +30,7 @@ require_once PT_EVENT_PLUGIN_DIR . 'includes/post-types/class-sessao.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/post-types/class-participante.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-meta-boxes.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-sessao-participantes.php';
+require_once PT_EVENT_PLUGIN_DIR . 'includes/admin/class-sessao-sub-sessoes.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/settings/class-settings.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode.php';
 require_once PT_EVENT_PLUGIN_DIR . 'includes/frontend/class-shortcode-cards.php';
@@ -105,6 +106,7 @@ final class Plugin {
 		PostTypes\Participante::get_instance();
 		Admin\Meta_Boxes::get_instance();
 		Admin\Sessao_Participantes::get_instance();
+		Admin\Sessao_Sub_Sessoes::get_instance();
 		Settings\Settings::get_instance();
 		Frontend\Shortcode::get_instance();
 		Frontend\Shortcode_Home::get_instance();
@@ -158,8 +160,9 @@ final class Plugin {
 			) );
 		}
 
-		// Editor e Importador: SortableJS + assets extras
-		if ( $is_editor || $is_importador || $is_ordenar ) {
+		// Editor, Importador e tela de edição da Sessão: SortableJS + assets extras
+		$is_sessao_edit = ( 'pt_sessao' === $screen->post_type );
+		if ( $is_editor || $is_importador || $is_ordenar || $is_sessao_edit ) {
 			wp_enqueue_media();
 			wp_enqueue_style(
 				'pt-event-admin',

@@ -40,12 +40,13 @@ class Sessao_Participantes {
 
 		$current = Relationship::get_by_sessao( $post->ID );
 		$papeis  = array(
-			''           => __( '— Selecionar —', 'pt-event' ),
-			'palestrante'   => __( 'Palestrante', 'pt-event' ),
-			'conferencista' => __( 'Conferencista', 'pt-event' ),
-			'moderador'     => __( 'Moderador', 'pt-event' ),
-			'debatedor'     => __( 'Debatedor', 'pt-event' ),
-			'convidado'     => __( 'Convidado', 'pt-event' ),
+			''                 => __( '— Selecionar —', 'pt-event' ),
+			'mensagem_inicial' => __( 'Mensagem inicial', 'pt-event' ),
+			'palestrante'      => __( 'Palestrante', 'pt-event' ),
+			'conferencista'    => __( 'Conferencista', 'pt-event' ),
+			'moderador'        => __( 'Moderador', 'pt-event' ),
+			'debatedor'        => __( 'Debatedor', 'pt-event' ),
+			'convidado'        => __( 'Convidado', 'pt-event' ),
 		);
 
 		?>

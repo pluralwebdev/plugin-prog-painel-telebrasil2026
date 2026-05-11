@@ -182,7 +182,7 @@ class Shortcode {
 	private function group_by_papel( $participantes ) {
 		$grouped = array();
 		foreach ( $participantes as $part ) {
-			$papel = ! empty( $part['papel'] ) ? ucfirst( $part['papel'] ) : 'Participante';
+			$papel = ! empty( $part['papel'] ) ? $this->format_papel( $part['papel'] ) : 'Participante';
 			if ( ! isset( $grouped[ $papel ] ) ) {
 				$grouped[ $papel ] = array();
 			}
@@ -191,18 +191,24 @@ class Shortcode {
 		return $grouped;
 	}
 
+	private function format_papel( $papel ) {
+		return ucfirst( str_replace( '_', ' ', $papel ) );
+	}
+
 	private function get_papel_label( $papel, $count ) {
 		if ( $count <= 1 ) {
 			return $papel;
 		}
 		$plural = array(
-			'Participante' => 'Participantes',
-			'Palestrante'  => 'Palestrantes',
-			'Moderador'    => 'Moderadores',
-			'Debatedor'    => 'Debatedores',
-			'Convidado'    => 'Convidados',
-			'Keynote'      => 'Keynotes',
-			'Abertura'     => 'Abertura',
+			'Participante'     => 'Participantes',
+			'Palestrante'      => 'Palestrantes',
+			'Conferencista'    => 'Conferencistas',
+			'Moderador'        => 'Moderadores',
+			'Debatedor'        => 'Debatedores',
+			'Convidado'        => 'Convidados',
+			'Keynote'          => 'Keynotes',
+			'Abertura'         => 'Abertura',
+			'Mensagem inicial' => 'Mensagens iniciais',
 		);
 		return isset( $plural[ $papel ] ) ? $plural[ $papel ] : $papel . 's';
 	}

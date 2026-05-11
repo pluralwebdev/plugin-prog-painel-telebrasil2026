@@ -357,9 +357,9 @@ class Importador {
 
 				h += '<div class="pt-part-cargo"><input type="text" class="pt-p-cargo" value="' + escA(p.cargo) + '" placeholder="Cargo / Empresa" /></div>';
 				h += '<div class="pt-part-papel"><select class="pt-p-papel">';
-				var papeis = ['', 'palestrante', 'conferencista', 'moderador', 'debatedor', 'keynote', 'abertura'];
+				var papeis = ['', 'mensagem_inicial', 'palestrante', 'conferencista', 'moderador', 'debatedor', 'keynote', 'abertura'];
 				$.each(papeis, function(_, v) {
-					var label = v ? v.charAt(0).toUpperCase() + v.slice(1) : '-- Papel --';
+					var label = v ? v.replace(/_/g, ' ').replace(/^./, function(c) { return c.toUpperCase(); }) : '-- Papel --';
 					h += '<option value="' + v + '"' + (v === p.papel ? ' selected' : '') + '>' + label + '</option>';
 				});
 				h += '</select></div>';
@@ -1213,15 +1213,17 @@ class Importador {
 	private function normalize_papel( $papel ) {
 		$lower = mb_strtolower( trim( $papel ), 'UTF-8' );
 		$map = array(
-			'moderador'      => 'moderador',
-			'moderadora'     => 'moderador',
-			'moderação'      => 'moderador',
-			'moderacao'      => 'moderador',
-			'abertura'       => 'abertura',
-			'debatedor'      => 'debatedor',
-			'debatedores'    => 'debatedor',
-			'conferencista'  => 'conferencista',
-			'conferencistas' => 'conferencista',
+			'moderador'        => 'moderador',
+			'moderadora'       => 'moderador',
+			'moderação'        => 'moderador',
+			'moderacao'        => 'moderador',
+			'abertura'         => 'abertura',
+			'debatedor'        => 'debatedor',
+			'debatedores'      => 'debatedor',
+			'conferencista'    => 'conferencista',
+			'conferencistas'   => 'conferencista',
+			'mensagem inicial' => 'mensagem_inicial',
+			'mensagem_inicial' => 'mensagem_inicial',
 		);
 		return isset( $map[ $lower ] ) ? $map[ $lower ] : 'palestrante';
 	}

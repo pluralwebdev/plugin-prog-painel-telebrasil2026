@@ -318,9 +318,9 @@ class Editor {
 				h += '</div>';
 				h += '<div class="pt-part-cargo"><input type="text" class="pt-p-cargo" value="' + escA(p.cargo) + '" placeholder="Cargo / Empresa" /></div>';
 				h += '<div class="pt-part-papel"><select class="pt-p-papel">';
-				var papeis = ['', 'palestrante', 'conferencista', 'moderador', 'debatedor', 'keynote', 'abertura'];
+				var papeis = ['', 'mensagem_inicial', 'palestrante', 'conferencista', 'moderador', 'debatedor', 'keynote', 'abertura'];
 				$.each(papeis, function(_, v) {
-					var label = v ? v.charAt(0).toUpperCase() + v.slice(1) : '-- Papel --';
+					var label = v ? v.replace(/_/g, ' ').replace(/^./, function(c) { return c.toUpperCase(); }) : '-- Papel --';
 					h += '<option value="' + v + '"' + (v === p.papel ? ' selected' : '') + '>' + label + '</option>';
 				});
 				h += '</select></div>';
@@ -733,7 +733,7 @@ class Editor {
 				var grouped = {}, papelOrder = [];
 				$.each(parts, function(i, p) {
 					if (!p.nome) return;
-					var papel = p.papel ? (p.papel.charAt(0).toUpperCase() + p.papel.slice(1)) : 'Participante';
+					var papel = p.papel ? (p.papel.replace(/_/g, ' ').replace(/^./, function(c) { return c.toUpperCase(); })) : 'Participante';
 					if (!grouped[papel]) { grouped[papel] = []; papelOrder.push(papel); }
 					grouped[papel].push(p);
 				});
