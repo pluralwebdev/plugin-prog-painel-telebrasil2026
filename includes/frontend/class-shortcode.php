@@ -98,22 +98,43 @@ class Shortcode {
 
 										<?php
 										$participantes = Helpers::get_participantes_by_sessao( $sessao['id'] );
-										if ( ! empty( $participantes ) ) :
-											$grouped = $this->group_by_papel( $participantes );
-											$bg_url  = $this->get_bg_url( $settings );
-										?>
+										$sub_sessoes_json = get_post_meta( $sessao['id'], '_pt_event_sub_sessoes', true );
+										$sub_sessoes = $sub_sessoes_json ? json_decode( $sub_sessoes_json, true ) : array();
+										$has_sub = ! empty( $sub_sessoes ) && is_array( $sub_sessoes );
+
+										if ( ! empty( $participantes ) || $has_sub ) :
+											$bg_url = $this->get_bg_url( $settings );
+
+											if ( $has_sub ) {
+												// Layout estruturado: papéis (sem moderador) → sub-sessões → moderador
+												$sub_ids = $this->collect_sub_session_ids( $sub_sessoes );
+												$principais  = array();
+												$moderadores = array();
+												foreach ( $participantes as $p ) {
+													if ( isset( $sub_ids[ $p['id'] ] ) ) {
+														continue; // pertence a uma sub-sessão, renderiza lá
+													}
+													if ( ! empty( $p['papel'] ) && 'moderador' === $p['papel'] ) {
+														$moderadores[] = $p;
+													} else {
+														$principais[] = $p;
+													}
+												}
+												$part_map = array();
+												foreach ( $participantes as $p ) {
+													$part_map[ $p['id'] ] = $p;
+												}
+											?>
 											<div class="pt-participantes-area">
-												<?php foreach ( $grouped as $papel => $parts ) : ?>
-													<div class="pt-papel-section">
-														<div class="pt-papel-label"><?php echo esc_html( $this->get_papel_label( $papel, count( $parts ) ) ); ?></div>
-														<div class="pt-participantes-row pt-participantes-grid">
-															<?php foreach ( $parts as $part ) : ?>
-																<?php echo Shortcode_Cards::render_card( $part, $bg_url ); ?>
-															<?php endforeach; ?>
-														</div>
-													</div>
-												<?php endforeach; ?>
+												<?php echo $this->render_papel_groups( $principais, $bg_url ); ?>
+												<?php echo $this->render_sub_sessoes( $sub_sessoes, $part_map, $bg_url ); ?>
+												<?php echo $this->render_papel_groups( $moderadores, $bg_url ); ?>
 											</div>
+											<?php } else { ?>
+											<div class="pt-participantes-area">
+												<?php echo $this->render_papel_groups( $participantes, $bg_url ); ?>
+											</div>
+											<?php } ?>
 										<?php endif; ?>
 									</div>
 								</div>
@@ -211,6 +232,75 @@ class Shortcode {
 			'Mensagem inicial' => 'Mensagens iniciais',
 		);
 		return isset( $plural[ $papel ] ) ? $plural[ $papel ] : $papel . 's';
+	}
+
+	private function collect_sub_session_ids( $sub_sessoes ) {
+		$ids = array();
+		foreach ( $sub_sessoes as $sub ) {
+			if ( empty( $sub['participantes'] ) || ! is_array( $sub['participantes'] ) ) {
+				continue;
+			}
+			foreach ( $sub['participantes'] as $p ) {
+				if ( ! empty( $p['participante_id'] ) ) {
+					$ids[ absint( $p['participante_id'] ) ] = true;
+				}
+			}
+		}
+		return $ids;
+	}
+
+	private function render_papel_groups( $participantes, $bg_url ) {
+		if ( empty( $participantes ) ) {
+			return '';
+		}
+		$grouped = $this->group_by_papel( $participantes );
+		$html    = '';
+		foreach ( $grouped as $papel => $parts ) {
+			$html .= '<div class="pt-papel-section">';
+			$html .= '<div class="pt-papel-label">' . esc_html( $this->get_papel_label( $papel, count( $parts ) ) ) . '</div>';
+			$html .= '<div class="pt-participantes-row pt-participantes-grid">';
+			foreach ( $parts as $part ) {
+				$html .= Shortcode_Cards::render_card( $part, $bg_url );
+			}
+			$html .= '</div></div>';
+		}
+		return $html;
+	}
+
+	private function render_sub_sessoes( $sub_sessoes, $part_map, $bg_url ) {
+		if ( empty( $sub_sessoes ) ) {
+			return '';
+		}
+		$html = '<div class="pt-sub-sessoes-area">';
+		foreach ( $sub_sessoes as $sub ) {
+			$tipo   = ! empty( $sub['tipo'] ) ? sanitize_key( $sub['tipo'] ) : 'palestra';
+			$titulo = ! empty( $sub['titulo'] ) ? $sub['titulo'] : '';
+			$parts  = ! empty( $sub['participantes'] ) && is_array( $sub['participantes'] ) ? $sub['participantes'] : array();
+
+			$html .= '<div class="pt-sub-sessao pt-sub-sessao-' . esc_attr( $tipo ) . '">';
+			if ( '' !== $titulo ) {
+				$html .= '<div class="pt-sub-sessao-titulo">' . esc_html( $titulo ) . '</div>';
+			}
+			if ( ! empty( $parts ) ) {
+				$html .= '<div class="pt-participantes-row pt-participantes-grid">';
+				foreach ( $parts as $p ) {
+					$pid = ! empty( $p['participante_id'] ) ? absint( $p['participante_id'] ) : 0;
+					if ( ! $pid || ! isset( $part_map[ $pid ] ) ) {
+						continue; // participante não encontrado ou não confirmado
+					}
+					$card_data = $part_map[ $pid ];
+					// Override de cargo com o cargo específico da sub-sessão
+					if ( isset( $p['cargo'] ) && '' !== $p['cargo'] ) {
+						$card_data['cargo'] = $p['cargo'];
+					}
+					$html .= Shortcode_Cards::render_card( $card_data, $bg_url );
+				}
+				$html .= '</div>';
+			}
+			$html .= '</div>';
+		}
+		$html .= '</div>';
+		return $html;
 	}
 
 	private function build_css_vars( $settings ) {

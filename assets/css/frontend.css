@@ -438,6 +438,57 @@
 	margin-bottom: 0;
 }
 
+/* ==========================================================================
+   Sub-sessões (Palestra N: / Debate N - / blocos nomeados dentro de uma sessão)
+   ========================================================================== */
+.pt-programacao .pt-sub-sessoes-area {
+	margin: 0 0 24px;
+}
+
+.pt-programacao .pt-sub-sessao {
+	margin-bottom: 24px;
+	padding-left: 14px;
+	border-left: 3px solid var(--pt-primaria, #006B3F);
+}
+
+.pt-programacao .pt-sub-sessao:last-child {
+	margin-bottom: 0;
+}
+
+.pt-programacao .pt-sub-sessao-titulo {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--pt-escura, #0A1E3D);
+	line-height: 1.35;
+	margin-bottom: 14px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--pt-primaria-bg, #e8f5ee);
+	font-family: "ClashDisplay-Medium", "Inter", sans-serif;
+}
+
+/* Variante visual por tipo */
+.pt-programacao .pt-sub-sessao-palestra {
+	border-left-color: var(--pt-primaria, #006B3F);
+}
+
+.pt-programacao .pt-sub-sessao-debate {
+	border-left-color: var(--pt-primaria-claro, #00A86B);
+}
+
+.pt-programacao .pt-sub-sessao-debate .pt-sub-sessao-titulo {
+	color: var(--pt-escura, #0A1E3D);
+}
+
+@media (max-width: 768px) {
+	.pt-programacao .pt-sub-sessao {
+		padding-left: 10px;
+	}
+	.pt-programacao .pt-sub-sessao-titulo {
+		font-size: 14px;
+		margin-bottom: 10px;
+	}
+}
+
 .pt-programacao .pt-participantes-row {
 	display: flex !important;
 	flex-wrap: wrap !important;

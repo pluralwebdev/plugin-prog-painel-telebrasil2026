@@ -167,18 +167,31 @@ class Groq_Client {
 
 REGRAS IMPORTANTES:
 1. Identifique DIAS (datas) no texto. Formatos possíveis: "Dia 25/11", "25 de novembro", "25/11/2026", "Segunda-feira, 25/11", etc.
-2. Identifique SESSÕES com horário de início, fim e título. Formatos: "10:40 - 11:40 | Título", "10h40 às 11h40 - Título", "10:40-11:40: Título", etc.
-3. Identifique PARTICIPANTES de cada sessão. Um participante é uma PESSOA com nome próprio. Formatos possíveis:
+2. Identifique SESSÕES com horário de início, fim e título. Formatos: "10:40 - 11:40 | Título", "10h40 às 11h40 - Título", "10:40-11:40: Título", etc. O título da sessão pode aparecer em linha separada do horário (sem o pipe "|") quando o texto está formatado livremente.
+3. Identifique SUBTÍTULO: linha curta logo após o título principal que complementa o assunto da sessão. Ex.: título="Painel União Europeia", subtítulo="A infraestrutura digital e a transformação da IA: a experiência Europeia".
+4. Identifique PARTICIPANTES de cada sessão. Um participante é uma PESSOA com nome próprio. Formatos possíveis:
    - "Nome Sobrenome, Cargo/Empresa"
    - "Nome Sobrenome - Empresa"
    - "Nome Sobrenome (Empresa)"
    - "Nome - Sigla" (ex: "Ulisses - ANM" = participante com nome "Ulisses" e cargo/empresa "ANM")
    - Apenas "Nome Sobrenome" sem cargo
-4. Linhas com nomes próprios (começando com letra maiúscula, 1+ palavras) seguidas de traço/vírgula e sigla ou empresa curta SÃO PARTICIPANTES, não descrições.
-5. Descrições são textos longos explicativos sobre o tema da sessão, não contêm nomes de pessoas.
-6. Se uma linha tem formato "Nome - Organização/Sigla", é SEMPRE um participante.
-7. Detecte papéis: se antes de um grupo de nomes aparecer "Moderador:", "Moderação:", "Abertura:", "Debatedores:", use esse papel. Caso contrário, use "palestrante".
-8. Detecte confirmação: se a linha contém "Confirmado/a", marque confirmado="sim". Se contém "CANCELADO", marque confirmado="cancelado". Caso contrário, confirmado="nao".
+5. Linhas com nomes próprios (começando com letra maiúscula, 1+ palavras) seguidas de traço/vírgula e sigla ou empresa curta SÃO PARTICIPANTES, não descrições.
+6. Descrições são textos longos explicativos sobre o tema da sessão, não contêm nomes de pessoas.
+7. Se uma linha tem formato "Nome - Organização/Sigla", é SEMPRE um participante.
+8. Detecte PAPÉIS pelos marcadores antes do nome ou antes de um grupo de nomes:
+   - "Mensagem inicial:" → papel="mensagem_inicial" (geralmente 1 participante)
+   - "Moderador:" / "Moderadora:" / "Moderação:" → papel="moderador"
+   - "Abertura:" → papel="abertura"
+   - "Debatedores:" → papel="debatedor" (para a lista que segue)
+   - "Conferencista:" → papel="conferencista"
+   - "Keynote:" → papel="keynote"
+   - Sem marcador → papel="palestrante" (default)
+9. Detecte SUB-SESSÕES dentro de uma sessão (blocos nomeados internos). Marcadores:
+   - "Palestra N: [título]" ou "Palestra N - [título]" → sub_sessao com tipo="palestra" e titulo igual à LINHA INTEIRA (ex: "Palestra 1: A jornada digital europeia e a EU Tech Offer")
+   - "Debate N - [título]" ou "Debate N: [título]" → sub_sessao com tipo="debate" e titulo igual à LINHA INTEIRA (ex: "Debate 1 - Infraestruturas integradas: reflexões sobre a experiência europeia e brasileira")
+   Os participantes que aparecem LOGO DEPOIS desse marcador (até próxima sub-sessão, próximo marcador de papel, ou linha em branco dupla) pertencem àquela sub-sessão e NÃO entram no array principal "participantes".
+10. Em uma sessão com sub-sessões: o array "participantes" principal contém SOMENTE Mensagem inicial e Moderador (e outros papéis fora de sub-sessões). Os palestrantes/debatedores das sub-sessões vão DENTRO de sub_sessoes[].participantes.
+11. Detecte confirmação: se a linha contém "Confirmado/a", marque confirmado="sim". Se contém "CANCELADO", marque confirmado="cancelado". Caso contrário, confirmado="nao".
 
 FORMATO DE SAÍDA (JSON puro, sem markdown):
 {
@@ -189,6 +202,7 @@ FORMATO DE SAÍDA (JSON puro, sem markdown):
       "hora_inicio": "10:40",
       "hora_fim": "11:40",
       "titulo": "Título da sessão",
+      "subtitulo": "Subtítulo curto, se houver",
       "descricao": "Texto descritivo opcional",
       "participantes": [
         {
@@ -196,6 +210,22 @@ FORMATO DE SAÍDA (JSON puro, sem markdown):
           "cargo": "Cargo ou Empresa",
           "papel": "palestrante",
           "confirmado": "nao"
+        }
+      ],
+      "sub_sessoes": [
+        {
+          "tipo": "palestra",
+          "titulo": "Palestra 1: A jornada digital europeia e a EU Tech Offer",
+          "participantes": [
+            { "nome": "Robert Steinlechner", "cargo": "Delegação da União Europeia", "confirmado": "nao" }
+          ]
+        },
+        {
+          "tipo": "debate",
+          "titulo": "Debate 1 - Infraestruturas integradas: reflexões sobre a experiência europeia e brasileira",
+          "participantes": [
+            { "nome": "Cristiane Rauen", "cargo": "Diretora de Transformação Digital e Inovação do MDIC", "confirmado": "nao" }
+          ]
         }
       ]
     }
@@ -206,8 +236,11 @@ REGRAS DE FORMATO:
 - dia: formato ISO "YYYY-MM-DD". Se o ano não aparece, use 2026.
 - dia_label: texto original do dia como aparece no texto.
 - hora_inicio e hora_fim: formato "HH:MM" (24h).
-- papel: um de "palestrante", "moderador", "debatedor", "abertura", "keynote".
+- subtitulo: se a sessão não tem subtítulo claro, omita o campo ou use "".
+- papel: um de "mensagem_inicial", "palestrante", "conferencista", "moderador", "debatedor", "abertura", "keynote".
 - confirmado: "sim", "nao" ou "cancelado".
+- sub_sessoes: array vazio [] ou omitido quando não há sub-sessões.
+- Dentro de sub_sessoes, "tipo" é "palestra" ou "debate". O "titulo" deve preservar o texto completo da linha marcadora ("Palestra 1: ..." ou "Debate 1 - ...").
 - Se não houver participantes na sessão, retorne array vazio [].
 - NÃO invente dados. Extraia SOMENTE o que está no texto.
 - Retorne APENAS o JSON, sem explicações.';

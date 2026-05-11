@@ -120,6 +120,16 @@ class Importador {
 			.pt-sessao-desc textarea { width: 100%; min-height: 40px; resize: vertical; }
 			.pt-participantes-section { padding: 0 14px 14px; }
 			.pt-participantes-section h4 { margin: 0 0 8px; font-size: 13px; color: #2271b1; border-bottom: 1px solid #e0e0e0; padding-bottom: 4px; }
+			.pt-sub-sessoes-section { padding: 0 14px 14px; }
+			.pt-sub-sessoes-section h4 { margin: 0 0 8px; font-size: 13px; color: #2271b1; border-bottom: 1px solid #e0e0e0; padding-bottom: 4px; }
+			.pt-ss-preview { background: #f6f7f7; border-left: 3px solid #2271b1; padding: 8px 12px; margin-bottom: 8px; border-radius: 0 3px 3px 0; }
+			.pt-ss-preview.pt-ss-tipo-debate { border-left-color: #5b8def; }
+			.pt-ss-preview-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+			.pt-ss-preview-tipo { display: inline-block; padding: 1px 8px; background: #2271b1; color: #fff; font-size: 10px; font-weight: 700; text-transform: uppercase; border-radius: 2px; }
+			.pt-ss-preview.pt-ss-tipo-debate .pt-ss-preview-tipo { background: #5b8def; }
+			.pt-ss-preview-titulo { font-size: 13px; font-weight: 600; color: #1d2327; }
+			.pt-ss-preview-parts { margin: 0; padding-left: 18px; font-size: 12px; color: #50575e; }
+			.pt-ss-preview-parts li { margin-bottom: 2px; }
 			.pt-participante-row { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dotted #ddd; flex-wrap: wrap; }
 			.pt-participante-row:last-child { border-bottom: none; }
 			.pt-part-foto { width: 50px; height: 50px; border: 2px dashed #c3c4c7; border-radius: 50%; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #f0f0f1; flex-shrink: 0; position: relative; }
@@ -297,6 +307,32 @@ class Importador {
 					html += '<button type="button" class="pt-btn-add-part">+ Adicionar Participante</button>';
 					html += '</div>';
 
+					// Sub-sessões detectadas (visualização — edição é feita no admin após importar)
+					if (s.sub_sessoes && s.sub_sessoes.length) {
+						html += '<div class="pt-sub-sessoes-section">';
+						html += '<h4>Sub-sessões detectadas <span style="font-weight:400;font-size:11px;color:#646970;">(edite na sessão depois de importar)</span></h4>';
+						$.each(s.sub_sessoes, function(ssi, ss) {
+							var tipoLabel = ss.tipo === 'debate' ? 'Debate' : 'Palestra';
+							var tipoClass = 'pt-ss-tipo-' + (ss.tipo || 'palestra');
+							html += '<div class="pt-ss-preview ' + tipoClass + '">';
+							html += '<div class="pt-ss-preview-header">';
+							html += '<span class="pt-ss-preview-tipo">' + tipoLabel + '</span>';
+							html += '<span class="pt-ss-preview-titulo">' + esc(ss.titulo || '(sem título)') + '</span>';
+							html += '</div>';
+							if (ss.participantes && ss.participantes.length) {
+								html += '<ul class="pt-ss-preview-parts">';
+								$.each(ss.participantes, function(_, p) {
+									var line = '<strong>' + esc(p.nome || '') + '</strong>';
+									if (p.cargo) line += ' — ' + esc(p.cargo);
+									html += '<li>' + line + '</li>';
+								});
+								html += '</ul>';
+							}
+							html += '</div>';
+						});
+						html += '</div>';
+					}
+
 					html += '</div>';
 				});
 
@@ -407,16 +443,20 @@ class Importador {
 				$('#pt-import-preview .pt-sessao-block').each(function() {
 					var $block = $(this);
 					var sessaoAction = $block.find('.pt-s-dup-action').val() || 'criar';
+					var si = parseInt($block.data('idx'), 10);
+					var orig = (typeof si === 'number' && parsedData && parsedData[si]) ? parsedData[si] : null;
 
 					var sessao = {
 						dia: $block.find('.pt-s-dia').val(),
 						hora_inicio: $block.find('.pt-s-inicio').val(),
 						hora_fim: $block.find('.pt-s-fim').val(),
 						titulo: $block.find('.pt-s-titulo').val(),
+						subtitulo: (orig && orig.subtitulo) ? orig.subtitulo : '',
 						descricao: $block.find('.pt-s-desc').val(),
 						ordem: $block.find('.pt-s-ordem').val(),
 						dup_action: sessaoAction,
-						participantes: []
+						participantes: [],
+						sub_sessoes: (orig && orig.sub_sessoes) ? orig.sub_sessoes : []
 					};
 
 					$block.find('.pt-participante-row').each(function() {
@@ -669,15 +709,18 @@ class Importador {
 		$count_parts    = 0;
 		$count_puladas  = 0;
 		$count_atualizadas = 0;
+		$count_sub_sessoes = 0;
 
 		foreach ( $sessoes_raw as $s ) {
 			$titulo      = sanitize_text_field( $s['titulo'] );
+			$subtitulo   = isset( $s['subtitulo'] ) ? sanitize_text_field( $s['subtitulo'] ) : '';
 			$dia         = sanitize_text_field( $s['dia'] );
 			$hora_inicio = sanitize_text_field( $s['hora_inicio'] );
 			$hora_fim    = sanitize_text_field( $s['hora_fim'] );
 			$descricao   = sanitize_textarea_field( $s['descricao'] );
 			$ordem       = isset( $s['ordem'] ) ? absint( $s['ordem'] ) : $count_sessoes;
 			$dup_action  = isset( $s['dup_action'] ) ? sanitize_text_field( $s['dup_action'] ) : 'criar';
+			$sub_sessoes_raw = ( isset( $s['sub_sessoes'] ) && is_array( $s['sub_sessoes'] ) ) ? $s['sub_sessoes'] : array();
 
 			// Pular sessao se usuario escolheu
 			if ( 'pular' === $dup_action ) {
@@ -696,6 +739,7 @@ class Importador {
 				if ( $sessao_id ) {
 					wp_update_post( array( 'ID' => $sessao_id, 'post_title' => $titulo ) );
 					update_post_meta( $sessao_id, '_pt_event_titulo', $titulo );
+					update_post_meta( $sessao_id, '_pt_event_subtitulo', $subtitulo );
 					update_post_meta( $sessao_id, '_pt_event_dia', $dia );
 					update_post_meta( $sessao_id, '_pt_event_hora_inicio', $hora_inicio );
 					update_post_meta( $sessao_id, '_pt_event_hora_fim', $hora_fim );
@@ -721,6 +765,7 @@ class Importador {
 				}
 
 				update_post_meta( $sessao_id, '_pt_event_titulo', $titulo );
+				update_post_meta( $sessao_id, '_pt_event_subtitulo', $subtitulo );
 				update_post_meta( $sessao_id, '_pt_event_dia', $dia );
 				update_post_meta( $sessao_id, '_pt_event_hora_inicio', $hora_inicio );
 				update_post_meta( $sessao_id, '_pt_event_hora_fim', $hora_fim );
@@ -732,6 +777,11 @@ class Importador {
 			// Participantes da sessao
 			if ( $sessao_id && ! empty( $s['participantes'] ) ) {
 				$this->process_participantes( $sessao_id, $s['participantes'], $count_parts );
+			}
+
+			// Sub-sessões: cria/reusa participantes, persiste JSON e sincroniza junction
+			if ( $sessao_id ) {
+				$count_sub_sessoes += $this->process_sub_sessoes( $sessao_id, $sub_sessoes_raw, $count_parts );
 			}
 		}
 
@@ -761,6 +811,7 @@ class Importador {
 		if ( $count_atualizadas > 0 )  $parts[] = $count_atualizadas . ' sessoes atualizadas';
 		if ( $count_puladas > 0 )      $parts[] = $count_puladas . ' sessoes puladas';
 		if ( $count_parts > 0 )        $parts[] = $count_parts . ' novos participantes';
+		if ( $count_sub_sessoes > 0 )  $parts[] = $count_sub_sessoes . ' sub-sessoes';
 
 		$msg = implode( ', ', $parts ) . '.';
 		wp_send_json_success( array( 'message' => $msg ) );
@@ -846,6 +897,91 @@ class Importador {
 			$p_ordem++;
 			$count_new++;
 		}
+	}
+
+	// =========================================================================
+	// Processar sub-sessões de uma sessão (importador)
+	// =========================================================================
+
+	private function process_sub_sessoes( $sessao_id, $sub_sessoes_raw, &$count_new ) {
+		if ( empty( $sub_sessoes_raw ) || ! is_array( $sub_sessoes_raw ) ) {
+			// Limpa meta se não vier nenhuma sub-sessão (caso de sobrescrever sem sub)
+			delete_post_meta( $sessao_id, '_pt_event_sub_sessoes' );
+			return 0;
+		}
+
+		$final  = array();
+		$ordem  = 100; // offset para participantes de sub-sessões na junction
+
+		foreach ( $sub_sessoes_raw as $sub ) {
+			$tipo   = isset( $sub['tipo'] ) ? sanitize_key( $sub['tipo'] ) : 'palestra';
+			$tipo   = in_array( $tipo, array( 'palestra', 'debate' ), true ) ? $tipo : 'palestra';
+			$titulo = isset( $sub['titulo'] ) ? sanitize_text_field( $sub['titulo'] ) : '';
+			$parts_in  = ( isset( $sub['participantes'] ) && is_array( $sub['participantes'] ) ) ? $sub['participantes'] : array();
+			$papel_inf = ( 'debate' === $tipo ) ? 'debatedor' : 'palestrante';
+
+			$parts_out = array();
+			foreach ( $parts_in as $p ) {
+				$nome  = isset( $p['nome'] ) ? sanitize_text_field( $p['nome'] ) : '';
+				$cargo = isset( $p['cargo'] ) ? sanitize_text_field( $p['cargo'] ) : '';
+				if ( '' === $nome ) {
+					continue;
+				}
+				$confirmado = isset( $p['confirmado'] ) ? sanitize_text_field( $p['confirmado'] ) : 'nao';
+				$foto_id    = ! empty( $p['foto_id'] ) ? absint( $p['foto_id'] ) : 0;
+
+				// Reusar ou criar participante (mesma lógica de duplicata por _pt_event_nome)
+				$pid = $this->find_existing_participante( $nome );
+				if ( ! $pid ) {
+					$pid = wp_insert_post( array(
+						'post_type'   => 'pt_participante',
+						'post_title'  => $nome,
+						'post_status' => 'publish',
+					) );
+					if ( is_wp_error( $pid ) ) {
+						continue;
+					}
+					update_post_meta( $pid, '_pt_event_nome', $nome );
+					if ( $cargo ) {
+						update_post_meta( $pid, '_pt_event_cargo', $cargo );
+					}
+					update_post_meta( $pid, '_pt_event_confirmado', $confirmado );
+					if ( $foto_id ) {
+						update_post_meta( $pid, '_pt_event_foto', $foto_id );
+						set_post_thumbnail( $pid, $foto_id );
+					}
+					$count_new++;
+				}
+
+				// Sincronizar na junction (papel inferido, ordem após principais)
+				Relationship::add( $sessao_id, $pid, $papel_inf, $ordem, $cargo );
+				$ordem++;
+
+				$parts_out[] = array(
+					'participante_id' => $pid,
+					'cargo'           => $cargo,
+				);
+			}
+
+			// Pular sub-sessões totalmente vazias
+			if ( '' === $titulo && empty( $parts_out ) ) {
+				continue;
+			}
+
+			$final[] = array(
+				'tipo'          => $tipo,
+				'titulo'        => $titulo,
+				'participantes' => $parts_out,
+			);
+		}
+
+		if ( ! empty( $final ) ) {
+			update_post_meta( $sessao_id, '_pt_event_sub_sessoes', wp_json_encode( $final ) );
+		} else {
+			delete_post_meta( $sessao_id, '_pt_event_sub_sessoes' );
+		}
+
+		return count( $final );
 	}
 
 	// =========================================================================
@@ -1042,6 +1178,8 @@ class Importador {
 
 				$descricao     = '';
 				$participantes = array();
+				$sub_sessoes   = array();
+				$current_sub   = null; // null = sem sub-sessão ativa; senão índice em $sub_sessoes
 				$papel_atual   = 'palestrante';
 				$i++;
 
@@ -1071,20 +1209,48 @@ class Importador {
 						break;
 					}
 
-					// Marcador de papel
-					if ( preg_match( '/^(Moderador|Moderadora|Moderação|Moderacao|Abertura|Debatedores?)\s*:?\s*$/iu', $next, $pm ) ) {
-						$papel_atual = $this->normalize_papel( $pm[1] );
+					// Sub-sessão: "Palestra N: [título]" ou "Palestra N - [título]"
+					if ( preg_match( '/^(Palestra\s*\d*[\s:\-–]+.+)$/iu', $next ) && false === stripos( $next, ',' ) ) {
+						$sub_sessoes[] = array(
+							'tipo'          => 'palestra',
+							'titulo'        => trim( $next ),
+							'participantes' => array(),
+						);
+						$current_sub = count( $sub_sessoes ) - 1;
 						$i++;
 						continue;
 					}
 
-					// Linha com prefixo de papel: "Moderador: Nome, Cargo"
-					if ( preg_match( '/^(Moderador|Moderadora|Moderação|Moderacao|Abertura)\s*:\s*(.+)$/iu', $next, $pm ) ) {
+					// Sub-sessão: "Debate N - [título]" ou "Debate N: [título]"
+					if ( preg_match( '/^(Debate\s*\d+\s*[\-–:]\s*.+)$/iu', $next ) ) {
+						$sub_sessoes[] = array(
+							'tipo'          => 'debate',
+							'titulo'        => trim( $next ),
+							'participantes' => array(),
+						);
+						$current_sub = count( $sub_sessoes ) - 1;
+						$i++;
+						continue;
+					}
+
+					// Marcador de papel (sem participante na mesma linha)
+					if ( preg_match( '/^(Mensagem\s+inicial|Moderador|Moderadora|Moderação|Moderacao|Abertura|Debatedores?|Conferencistas?)\s*:?\s*$/iu', $next, $pm ) ) {
+						$papel_atual = $this->normalize_papel( $pm[1] );
+						$current_sub = null; // sai de qualquer sub-sessão ativa
+						$i++;
+						continue;
+					}
+
+					// Linha com prefixo de papel + participante: "Moderador: Nome, Cargo" ou "Mensagem inicial: Nome - Cargo"
+					if ( preg_match( '/^(Mensagem\s+inicial|Moderador|Moderadora|Moderação|Moderacao|Abertura|Conferencista)\s*:\s*(.+)$/iu', $next, $pm ) ) {
 						$papel_linha = $this->normalize_papel( $pm[1] );
-						$part = $this->parse_participante_line( $pm[2] );
+						// Tratar "Nome - Cargo" como "Nome, Cargo"
+						$resto = preg_replace( '/^([^,\-–]+?)\s+[\-–]\s+/u', '$1, ', trim( $pm[2] ) );
+						$part  = $this->parse_participante_line( $resto );
 						if ( $part ) {
-							$part['papel'] = $papel_linha;
+							$part['papel']   = $papel_linha;
 							$participantes[] = $part;
+							$current_sub     = null; // mensagem inicial / moderador NÃO entram em sub-sessão
 						}
 						$i++;
 						continue;
@@ -1093,10 +1259,16 @@ class Importador {
 					// Tentar detectar se e participante
 					$part = $this->parse_participante_line( $next );
 					if ( $part ) {
-						if ( empty( $part['papel'] ) ) {
-							$part['papel'] = $papel_atual;
+						if ( null !== $current_sub && isset( $sub_sessoes[ $current_sub ] ) ) {
+							// Participante de sub-sessão: não inclui 'papel' (é inferido pelo tipo da sub-sessão)
+							unset( $part['papel'] );
+							$sub_sessoes[ $current_sub ]['participantes'][] = $part;
+						} else {
+							if ( empty( $part['papel'] ) ) {
+								$part['papel'] = $papel_atual;
+							}
+							$participantes[] = $part;
 						}
-						$participantes[] = $part;
 						$i++;
 						continue;
 					}
@@ -1106,7 +1278,7 @@ class Importador {
 					$i++;
 				}
 
-				$sessoes[] = array(
+				$sessao = array(
 					'dia'           => $dia_atual,
 					'dia_label'     => $dia_label_atual,
 					'hora_inicio'   => $hora_inicio,
@@ -1116,6 +1288,10 @@ class Importador {
 					'participantes' => $participantes,
 					'ordem'         => $ordem,
 				);
+				if ( ! empty( $sub_sessoes ) ) {
+					$sessao['sub_sessoes'] = $sub_sessoes;
+				}
+				$sessoes[] = $sessao;
 				$ordem++;
 				continue;
 			}
