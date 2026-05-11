@@ -68,7 +68,7 @@ class Sessao_Sub_Sessoes {
 				<?php esc_html_e( 'Sub-sessões são blocos nomeados (Palestra, Debate) com participantes próprios — útil para painéis com múltiplos segmentos. O título é livre (ex: "Palestra 1: A jornada digital europeia" ou "Debate 1 - Infraestruturas integradas").', 'pt-event' ); ?>
 			</p>
 
-			<input type="hidden" name="pt_event_sub_sessoes_json" id="pt-sub-sessoes-json" value="<?php echo esc_attr( wp_json_encode( $data ) ); ?>" />
+			<input type="hidden" name="pt_event_sub_sessoes_json" id="pt-sub-sessoes-json" value="<?php echo esc_attr( wp_json_encode( $data, JSON_UNESCAPED_UNICODE ) ); ?>" />
 
 			<div id="pt-sub-sessoes-list"></div>
 
@@ -123,9 +123,12 @@ class Sessao_Sub_Sessoes {
 			var state = [];
 			try { state = JSON.parse($hidden.val() || '[]') || []; } catch(e) { state = []; }
 
-			var tipos = <?php echo wp_json_encode( $tipos ); ?>;
-			var nonce = (typeof ptEventAdmin !== 'undefined') ? ptEventAdmin.nonce : '';
-			var ajaxUrl = (typeof ptEventAdmin !== 'undefined') ? ptEventAdmin.ajaxUrl : ajaxurl;
+			var tipos = <?php echo wp_json_encode( $tipos, JSON_UNESCAPED_UNICODE ); ?>;
+
+			// ptEventAdmin é localizado no footer, então só está disponível em $(document).ready ou depois.
+			// Acesso preguiçoso via getters.
+			function getNonce()   { return (typeof ptEventAdmin !== 'undefined') ? ptEventAdmin.nonce : ''; }
+			function getAjaxUrl() { return (typeof ptEventAdmin !== 'undefined') ? ptEventAdmin.ajaxUrl : (window.ajaxurl || '/wp-admin/admin-ajax.php'); }
 
 			function esc(s) { return $('<div>').text(s == null ? '' : s).html(); }
 			function escA(s) { return (s == null ? '' : s).toString().replace(/"/g, '&quot;'); }
@@ -247,11 +250,34 @@ class Sessao_Sub_Sessoes {
 
 			// ---- Event handlers ----
 
+			function buildAutoPrefix(tipo, n) {
+				return tipo === 'debate' ? ('Debate ' + n + ' - ') : ('Palestra ' + n + ': ');
+			}
+
+			function countByTipo(tipo) {
+				var c = 0;
+				$.each(state, function(_, s) { if (s.tipo === tipo) c++; });
+				return c;
+			}
+
 			$('#pt-add-sub-sessao').on('click', function() {
 				collectFromDom();
-				state.push({ tipo: 'palestra', titulo: '', participantes: [] });
+				var tipo = 'palestra';
+				var n = countByTipo(tipo) + 1;
+				state.push({ tipo: tipo, titulo: buildAutoPrefix(tipo, n), participantes: [] });
 				syncHidden();
 				render();
+				// Focar no título da nova sub-sessão (cursor no fim do prefixo)
+				setTimeout(function() {
+					var $last = $('#pt-sub-sessoes-list .pt-sub-sessao').last().find('.pt-ss-titulo');
+					if ($last.length) {
+						$last.focus();
+						var v = $last.val();
+						if ($last[0].setSelectionRange) {
+							$last[0].setSelectionRange(v.length, v.length);
+						}
+					}
+				}, 50);
 			});
 
 			$('#pt-sub-sessoes-list').on('click', '.pt-sub-sessao-remove', function() {
@@ -273,8 +299,33 @@ class Sessao_Sub_Sessoes {
 
 			// Tipo / título / cargo: atualiza header class + sync
 			$('#pt-sub-sessoes-list').on('change', '.pt-ss-tipo', function() {
-				var $header = $(this).closest('.pt-sub-sessao-header');
-				$header.toggleClass('tipo-debate', $(this).val() === 'debate');
+				var $sel    = $(this);
+				var $header = $sel.closest('.pt-sub-sessao-header');
+				var newTipo = $sel.val();
+				$header.toggleClass('tipo-debate', newTipo === 'debate');
+
+				// Re-prefixar título se ainda usa o auto-prefixo do tipo anterior
+				var $titulo = $header.find('.pt-ss-titulo');
+				var current = $titulo.val();
+				var palestraRe = /^Palestra\s*\d*\s*:\s*/i;
+				var debateRe   = /^Debate\s*\d*\s*[-–:]\s*/i;
+
+				// Conta sub-sessões do novo tipo no DOM (excluindo esta) + 1
+				var $blocks = $('#pt-sub-sessoes-list .pt-sub-sessao');
+				var self = $sel.closest('.pt-sub-sessao')[0];
+				var n = 1;
+				$blocks.each(function() {
+					if (this === self) return;
+					var t = $(this).find('.pt-ss-tipo').val();
+					if (t === newTipo) n++;
+				});
+
+				if (newTipo === 'debate' && palestraRe.test(current)) {
+					$titulo.val('Debate ' + n + ' - ' + current.replace(palestraRe, ''));
+				} else if (newTipo === 'palestra' && debateRe.test(current)) {
+					$titulo.val('Palestra ' + n + ': ' + current.replace(debateRe, ''));
+				}
+
 				collectFromDom();
 				syncHidden();
 			});
@@ -297,9 +348,9 @@ class Sessao_Sub_Sessoes {
 					return;
 				}
 				searchTimer = setTimeout(function() {
-					$.get(ajaxUrl, {
+					$.get(getAjaxUrl(), {
 						action: 'pt_event_search_participantes',
-						nonce: nonce,
+						nonce: getNonce(),
 						term: term
 					}).done(function(res) {
 						$results.empty();
@@ -362,6 +413,26 @@ class Sessao_Sub_Sessoes {
 		<?php
 	}
 
+	/**
+	 * Limpa o título de uma sub-sessão: mantém apenas a primeira linha não vazia.
+	 * Evita que título e participantes virem uma só linha quando a IA retorna mal formatado.
+	 */
+	public static function clean_sub_titulo( $raw ) {
+		if ( ! is_string( $raw ) ) {
+			return '';
+		}
+		$lines = preg_split( '/\r?\n/', $raw );
+		$first = '';
+		foreach ( $lines as $line ) {
+			$line = trim( $line );
+			if ( '' !== $line ) {
+				$first = $line;
+				break;
+			}
+		}
+		return sanitize_text_field( $first );
+	}
+
 	public function save( $post_id ) {
 		if ( ! isset( $_POST['pt_event_sub_sessoes_nonce'] ) ||
 			! wp_verify_nonce( $_POST['pt_event_sub_sessoes_nonce'], 'pt_event_sub_sessoes' ) ) {
@@ -385,7 +456,7 @@ class Sessao_Sub_Sessoes {
 		foreach ( $data as $sub ) {
 			$tipo   = isset( $sub['tipo'] ) ? sanitize_key( $sub['tipo'] ) : 'palestra';
 			$tipo   = in_array( $tipo, array( 'palestra', 'debate' ), true ) ? $tipo : 'palestra';
-			$titulo = isset( $sub['titulo'] ) ? sanitize_text_field( $sub['titulo'] ) : '';
+			$titulo = isset( $sub['titulo'] ) ? self::clean_sub_titulo( $sub['titulo'] ) : '';
 			$parts  = array();
 			if ( ! empty( $sub['participantes'] ) && is_array( $sub['participantes'] ) ) {
 				foreach ( $sub['participantes'] as $p ) {
@@ -410,7 +481,7 @@ class Sessao_Sub_Sessoes {
 			);
 		}
 
-		update_post_meta( $post_id, self::META_KEY, wp_json_encode( $clean ) );
+		update_post_meta( $post_id, self::META_KEY, wp_json_encode( $clean, JSON_UNESCAPED_UNICODE ) );
 
 		// Sincronizar junction: adicionar participantes das sub-sessões com papel inferido.
 		// Relationship::add usa REPLACE (UNIQUE sessao+participante), então é idempotente.

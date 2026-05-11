@@ -187,9 +187,13 @@ REGRAS IMPORTANTES:
    - "Keynote:" → papel="keynote"
    - Sem marcador → papel="palestrante" (default)
 9. Detecte SUB-SESSÕES dentro de uma sessão (blocos nomeados internos). Marcadores:
-   - "Palestra N: [título]" ou "Palestra N - [título]" → sub_sessao com tipo="palestra" e titulo igual à LINHA INTEIRA (ex: "Palestra 1: A jornada digital europeia e a EU Tech Offer")
-   - "Debate N - [título]" ou "Debate N: [título]" → sub_sessao com tipo="debate" e titulo igual à LINHA INTEIRA (ex: "Debate 1 - Infraestruturas integradas: reflexões sobre a experiência europeia e brasileira")
-   Os participantes que aparecem LOGO DEPOIS desse marcador (até próxima sub-sessão, próximo marcador de papel, ou linha em branco dupla) pertencem àquela sub-sessão e NÃO entram no array principal "participantes".
+   - "Palestra N: [título]" ou "Palestra N - [título]" → sub_sessao com tipo="palestra"
+   - "Debate N - [título]" ou "Debate N: [título]" → sub_sessao com tipo="debate"
+   IMPORTANTE — o "titulo" da sub-sessão é APENAS A PRIMEIRA LINHA, exatamente como aparece na fonte (incluindo o prefixo "Palestra N:" ou "Debate N -"). NÃO concatene o título com linhas seguintes. NÃO inclua nomes de participantes no título.
+   Exemplos corretos:
+     titulo: "Palestra 1: A jornada digital europeia e a EU Tech Offer"
+     titulo: "Debate 1 - Infraestruturas integradas: reflexões sobre a experiência europeia e brasileira"
+   As linhas SEGUINTES ao marcador (até a próxima sub-sessão, próximo marcador de papel ou linha em branco dupla) contêm os PARTICIPANTES daquela sub-sessão. Esses participantes vão em sub_sessoes[].participantes e NÃO entram no array principal "participantes".
 10. Em uma sessão com sub-sessões: o array "participantes" principal contém SOMENTE Mensagem inicial e Moderador (e outros papéis fora de sub-sessões). Os palestrantes/debatedores das sub-sessões vão DENTRO de sub_sessoes[].participantes.
 11. Detecte confirmação: se a linha contém "Confirmado/a", marque confirmado="sim". Se contém "CANCELADO", marque confirmado="cancelado". Caso contrário, confirmado="nao".
 
@@ -271,8 +275,10 @@ REGRAS DE FORMATO:
 				'hora_inicio'   => isset( $s['hora_inicio'] ) ? $this->normalize_time( $s['hora_inicio'] ) : '',
 				'hora_fim'      => isset( $s['hora_fim'] ) ? $this->normalize_time( $s['hora_fim'] ) : '',
 				'titulo'        => isset( $s['titulo'] ) ? sanitize_text_field( $s['titulo'] ) : '',
+				'subtitulo'     => isset( $s['subtitulo'] ) ? sanitize_text_field( $s['subtitulo'] ) : '',
 				'descricao'     => isset( $s['descricao'] ) ? sanitize_textarea_field( $s['descricao'] ) : '',
 				'participantes' => array(),
+				'sub_sessoes'   => array(),
 				'ordem'         => $ordem,
 			);
 
@@ -284,6 +290,28 @@ REGRAS DE FORMATO:
 						'papel'      => isset( $p['papel'] ) ? sanitize_text_field( $p['papel'] ) : 'palestrante',
 						'confirmado' => isset( $p['confirmado'] ) ? sanitize_text_field( $p['confirmado'] ) : 'nao',
 					);
+				}
+			}
+
+			if ( ! empty( $s['sub_sessoes'] ) && is_array( $s['sub_sessoes'] ) ) {
+				foreach ( $s['sub_sessoes'] as $ss ) {
+					$tipo = isset( $ss['tipo'] ) ? sanitize_key( $ss['tipo'] ) : 'palestra';
+					$tipo = in_array( $tipo, array( 'palestra', 'debate' ), true ) ? $tipo : 'palestra';
+					$sub  = array(
+						'tipo'          => $tipo,
+						'titulo'        => isset( $ss['titulo'] ) ? sanitize_text_field( $ss['titulo'] ) : '',
+						'participantes' => array(),
+					);
+					if ( ! empty( $ss['participantes'] ) && is_array( $ss['participantes'] ) ) {
+						foreach ( $ss['participantes'] as $p ) {
+							$sub['participantes'][] = array(
+								'nome'       => isset( $p['nome'] ) ? sanitize_text_field( $p['nome'] ) : '',
+								'cargo'      => isset( $p['cargo'] ) ? sanitize_text_field( $p['cargo'] ) : '',
+								'confirmado' => isset( $p['confirmado'] ) ? sanitize_text_field( $p['confirmado'] ) : 'nao',
+							);
+						}
+					}
+					$sessao['sub_sessoes'][] = $sub;
 				}
 			}
 

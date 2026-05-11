@@ -916,7 +916,7 @@ class Importador {
 		foreach ( $sub_sessoes_raw as $sub ) {
 			$tipo   = isset( $sub['tipo'] ) ? sanitize_key( $sub['tipo'] ) : 'palestra';
 			$tipo   = in_array( $tipo, array( 'palestra', 'debate' ), true ) ? $tipo : 'palestra';
-			$titulo = isset( $sub['titulo'] ) ? sanitize_text_field( $sub['titulo'] ) : '';
+			$titulo = isset( $sub['titulo'] ) ? Sessao_Sub_Sessoes::clean_sub_titulo( $sub['titulo'] ) : '';
 			$parts_in  = ( isset( $sub['participantes'] ) && is_array( $sub['participantes'] ) ) ? $sub['participantes'] : array();
 			$papel_inf = ( 'debate' === $tipo ) ? 'debatedor' : 'palestrante';
 
@@ -976,7 +976,7 @@ class Importador {
 		}
 
 		if ( ! empty( $final ) ) {
-			update_post_meta( $sessao_id, '_pt_event_sub_sessoes', wp_json_encode( $final ) );
+			update_post_meta( $sessao_id, '_pt_event_sub_sessoes', wp_json_encode( $final, JSON_UNESCAPED_UNICODE ) );
 		} else {
 			delete_post_meta( $sessao_id, '_pt_event_sub_sessoes' );
 		}
